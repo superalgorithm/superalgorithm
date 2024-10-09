@@ -1,0 +1,119 @@
+name: Auto Version and Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main # or 'master', depending on your default branch name
+
+jobs:
+  auto-release:
+    # Only run if the PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for creating releases
+      pull-requests: write # Needed for creating PRs
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important for git history
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tomli tomli-w
+
+      - name: Create and switch to version bump branch
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -b version-bump
+
+      - name: Determine version bump type
+        id: bump-type
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if [[ $PR_TITLE =~ ^breaking:|^major: ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [[ $PR_TITLE =~ ^feat:|^feature:|^minor: ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version
+        id: bump-version
+        run: |
+          cat << EOF > bump_version.py
+          import tomli
+          import tomli_w
+          from pathlib import Path
+          import sys
+
+          def bump_version(bump_type):
+              content = tomli.loads(Path("pyproject.toml").read_text())
+              current_version = content['project']['version']
+              major, minor, patch = map(int, current_version.split('.'))
+              
+              if bump_type == 'major':
+                  major += 1
+                  minor = patch = 0
+              elif bump_type == 'minor':
+                  minor += 1
+                  patch = 0
+              else:  # patch
+                  patch += 1
+              
+              new_version = f"{major}.{minor}.{patch}"
+              content['project']['version'] = new_version
+              Path("pyproject.toml").write_text(tomli_w.dumps(content))
+              return new_version
+
+          if __name__ == "__main__":
+              new_version = bump_version(sys.argv[1])
+              print(f"::set-output name=new_version::{new_version}")
+          EOF
+
+          python bump_version.py ${{ steps.bump-type.outputs.type }}
+
+      - name: Commit version bump
+        run: |
+          git add pyproject.toml
+          git commit -m "Bump version to ${{ steps.bump-version.outputs.new_version }}"
+          git push origin version-bump
+
+      - name: Create Pull Request for version bump
+        id: create-pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: version-bump
+          title: 'Bump version to ${{ steps.bump-version.outputs.new_version }}'
+          body: 'Automated version bump after merging PR #${{ github.event.pull_request.number }}'
+          commit-message: 'Bump version to ${{ steps.bump-version.outputs.new_version }}'
+
+      - name: Auto-merge version bump PR
+        run: gh pr merge --auto --merge "${{ steps.create-pr.outputs.pull-request-number }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.bump-version.outputs.new_version }}
+          name: Release v${{ steps.bump-version.outputs.new_version }}
+          body: |
+            Release of version ${{ steps.bump-version.outputs.new_version }}
+
+            Changes included in this release:
+            ${{ github.event.pull_request.title }}
+
+            For more details, see PR #${{ github.event.pull_request.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
