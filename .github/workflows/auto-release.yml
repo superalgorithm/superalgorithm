@@ -94,6 +94,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           branch: version-bump
+          base: main
           title: 'Bump version to ${{ steps.bump-version.outputs.new_version }}'
           body: 'Automated version bump after merging PR #${{ github.event.pull_request.number }}'
           commit-message: 'Bump version to ${{ steps.bump-version.outputs.new_version }}'
