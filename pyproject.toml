@@ -9,6 +9,7 @@ description = "Python framework for algorithmic trading"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = ["Super Algorithm <https://superalgorithm.com>"]
+authors = [{ name = "Super Algorithm", email = "hello@superalgorithm.com" }]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
