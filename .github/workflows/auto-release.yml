@@ -85,6 +85,7 @@ jobs:
 
       - name: Commit version bump
         run: |
+          git pull
           git add pyproject.toml
           git commit -m "Bump version to ${{ steps.bump-version.outputs.new_version }}"
           git push origin version-bump
