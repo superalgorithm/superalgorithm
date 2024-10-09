@@ -35,7 +35,6 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -b version-bump
-          git pull --rebase origin version-bump
 
       - name: Determine version bump type
         id: bump-type
@@ -117,5 +116,11 @@ jobs:
             ${{ github.event.pull_request.title }}
 
             For more details, see PR #${{ github.event.pull_request.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete version bump branch
+        run: |
+          git push origin --delete version-bump
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
