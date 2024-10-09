@@ -2,4 +2,4 @@
 
 # Usage
 
-Visit the guides superalgorithm.com
+Visit the guides superalgorithm.com.
