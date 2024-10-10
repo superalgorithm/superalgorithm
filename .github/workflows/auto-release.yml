@@ -30,6 +30,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install tomli tomli-w
 
+      - name: Run tests
+        run: |
+          pytest
+
       - name: Determine version bump type
         id: bump-type
         run: |
