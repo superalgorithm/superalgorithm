@@ -24,6 +24,9 @@ def api_call(
     api_key = config.get("SUPER_API_KEY")
     secret = config.get("SUPER_API_SECRET")
 
+    if not base_url or not api_key or not secret:
+        raise Exception("API endpoint, key, or secret is missing  in the config")
+
     url = f"{base_url}/{method}"
 
     nonce = guid()
