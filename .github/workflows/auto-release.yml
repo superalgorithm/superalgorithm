@@ -26,19 +26,19 @@ jobs:
         with:
           python-version: '3.x'
       - name: Write secret to config.yaml
-        run: echo ${{secrets.CONFIG_YAML}} | sed 's/./& /g' 
-        # run: echo "${{ secrets.CONFIG_YAML }}" > config.yaml
+        # run: echo ${{secrets.CONFIG_YAML}} | sed 's/./& /g' 
+        run: echo "${{ secrets.CONFIG_YAML }}" > config.yaml
       # - name: Write secret to config.yaml
       #   run: |
       #     python -c "import os; file = open('config.yaml', 'w'); file.write(os.environ['CONFIG_YAML']); file.close()"
       #   shell: bash
       #   env:
       #     CONFIG_YAML : ${{secrets.CONFIG_YAML}}
-      - name: Write secret to file
-        run: |
-          cat << EOF > ./config.yaml
-          ${{secrets.CONFIG_YAML}}
-          EOF
+      # - name: Write secret to file
+      #   run: |
+      #     cat << EOF > ./config.yaml
+      #     ${{secrets.CONFIG_YAML}}
+      #     EOF
 
       - name: Install dependencies
         run: |
