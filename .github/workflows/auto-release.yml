@@ -30,11 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install tomli tomli-w
 
-      #   - name: Create and switch to version bump branch
-      #     run: |
-      #       git config --global user.name 'github-actions[bot]'
-      #       git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-      #       git checkout -b version-bump
+      - name: Run tests
+        run: |
+          pytest
 
       - name: Determine version bump type
         id: bump-type
@@ -52,12 +50,6 @@ jobs:
         id: bump-version
         run: |
           python bump_version.py ${{ steps.bump-type.outputs.type }}
-
-      #   - name: Commit version bump
-      #     run: |
-      #       git add pyproject.toml
-      #       git commit -m "Bump version to ${{ steps.bump-version.outputs.new_version }}"
-      #       git push origin version-bump
 
       - name: Create Pull Request for version bump
         id: create-pr
@@ -92,9 +84,3 @@ jobs:
             For more details, see PR #${{ github.event.pull_request.number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    #   - name: Delete version bump branch
-    #     run: |
-    #       git push origin --delete version-bump
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

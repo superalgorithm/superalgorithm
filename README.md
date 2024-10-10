@@ -1,5 +1,14 @@
-# superalgorithm
+# Super Algorithm
 
-# Usage
+Algo trading simulation and execution framework with built in support for [superalgorithm.com](http://superalgorithm.com)
+backtesting and monitoring API.
 
-Visit the guides superalgorithm.com
+## Installation
+
+```
+$ pip install superalgorithm
+```
+
+## Usage
+
+Visit the guides [superalgorithm.com](http://superalgorithm.com)
