@@ -49,7 +49,7 @@ jobs:
         env:
           SUPER_STRATEGY_ID: test
         run: |
-          pytest
+          pytest -s
 
       - name: Determine version bump type
         id: bump-type
