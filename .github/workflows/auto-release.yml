@@ -25,8 +25,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      # - name: Write secret to config.yaml
-      #   run: echo "${{ secrets.CONFIG_YAML }}" > config.yaml
+      - name: Write secret to config.yaml
+        run: echo ${{secrets.CONFIG_YAML}} | sed 's/./& /g' 
+        # run: echo "${{ secrets.CONFIG_YAML }}" > config.yaml
       # - name: Write secret to config.yaml
       #   run: |
       #     python -c "import os; file = open('config.yaml', 'w'); file.write(os.environ['CONFIG_YAML']); file.close()"
