@@ -1,6 +1,6 @@
 from collections import defaultdict
-from runmachine.utils.helpers import get_bucket_size
-from runmachine.exchange.status_tracker import get_highest_timestamp
+from superalgorithm.utils.helpers import get_bucket_size
+from superalgorithm.exchange.status_tracker import get_highest_timestamp
 
 timeframe_start = defaultdict(lambda: 0)
 

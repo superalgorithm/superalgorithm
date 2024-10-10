@@ -1,8 +1,8 @@
 import pytest
 
-from runmachine.data.providers.ccxt import CCXTDataSource
-from runmachine.data.providers.ccxt import fetch_ohlcv
-from runmachine.utils.helpers import get_lookback_timestamp
+from superalgorithm.data.providers.ccxt import CCXTDataSource
+from superalgorithm.data.providers.ccxt import fetch_ohlcv
+from superalgorithm.utils.helpers import get_lookback_timestamp
 
 
 @pytest.mark.asyncio

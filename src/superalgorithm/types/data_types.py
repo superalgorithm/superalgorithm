@@ -5,8 +5,8 @@ from enum import Enum
 import json
 import random
 from typing import Any, Dict, List, Optional, Union
-from runmachine.utils.event_emitter import EventEmitter
-from runmachine.utils.helpers import get_now_ts
+from superalgorithm.utils.event_emitter import EventEmitter
+from superalgorithm.utils.helpers import get_now_ts
 
 
 class ExchangeType(Enum):

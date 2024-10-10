@@ -1,9 +1,9 @@
 import math
 from typing import List
-from runmachine.types import OHLCV
-from runmachine.types.data_types import AggregatorResult, Bar
-from runmachine.utils.event_emitter import EventEmitter
-from runmachine.utils.helpers import get_bucket_size
+from superalgorithm.types import OHLCV
+from superalgorithm.types.data_types import AggregatorResult, Bar
+from superalgorithm.utils.event_emitter import EventEmitter
+from superalgorithm.utils.helpers import get_bucket_size
 
 
 class OHLCVAggregator(EventEmitter):

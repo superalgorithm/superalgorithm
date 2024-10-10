@@ -2,10 +2,10 @@ import asyncio
 from typing import Any, Dict, Optional
 import ccxt.pro as ccxt
 from ccxt import Exchange
-from runmachine.exchange.base_exchange import BaseExchange
-from runmachine.utils.helpers import get_now_ts
-from runmachine.utils.logging import log_exception, log_message
-from runmachine.types.data_types import (
+from superalgorithm.exchange.base_exchange import BaseExchange
+from superalgorithm.utils.helpers import get_now_ts
+from superalgorithm.utils.logging import log_exception, log_message
+from superalgorithm.types.data_types import (
     BalanceData,
     Balances,
     ExchangeType,

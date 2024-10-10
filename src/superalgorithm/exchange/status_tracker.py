@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
-from runmachine.types.data_types import MarkPrice
-from runmachine.utils.helpers import get_now_ts
+from superalgorithm.types.data_types import MarkPrice
+from superalgorithm.utils.helpers import get_now_ts
 
 
 class StatusTracker:

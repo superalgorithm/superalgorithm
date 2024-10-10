@@ -1,18 +1,18 @@
 from unittest.mock import Mock
 import pytest
-from runmachine.data.providers.csv import CSVDataSource
-from runmachine.exchange.paper_exchange import PaperExchange
-from runmachine.strategy.base_strategy import BaseStrategy
-from runmachine.types.data_types import (
+from superalgorithm.data.providers.csv import CSVDataSource
+from superalgorithm.exchange.paper_exchange import PaperExchange
+from superalgorithm.strategy.base_strategy import BaseStrategy
+from superalgorithm.types.data_types import (
     Bar,
     ChartPointDataType,
     ChartSchema,
     OrderType,
     PositionType,
 )
-from runmachine.utils.api_client import api_call
-from runmachine.utils.bar_utils import is_new_bar
-from runmachine.utils.logging import chart, set_chart_schema, strategy_monitor
+from superalgorithm.utils.api_client import api_call
+from superalgorithm.utils.bar_utils import is_new_bar
+from superalgorithm.utils.logging import chart, set_chart_schema, strategy_monitor
 
 
 class TestStrategy(BaseStrategy):
@@ -65,6 +65,7 @@ class TestStrategy(BaseStrategy):
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(60)
 async def test_strategy():
     print("start")
 

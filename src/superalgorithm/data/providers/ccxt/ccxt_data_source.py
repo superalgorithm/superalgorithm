@@ -1,10 +1,10 @@
 from typing import List
-from runmachine.data.providers.ccxt.ccxt_helper import fetch_ohlcv
-from runmachine.data.data_provider import DataSource
-from runmachine.types import OHLCV
+from superalgorithm.data.providers.ccxt.ccxt_helper import fetch_ohlcv
+from superalgorithm.data.data_provider import DataSource
+from superalgorithm.types import OHLCV
 import ccxt.pro as ccxtpro
-from runmachine.types.data_types import Bar
-from runmachine.utils.logging import log_exception, log_message
+from superalgorithm.types.data_types import Bar
+from superalgorithm.utils.logging import log_exception, log_message
 
 
 class CCXTDataSource(DataSource):

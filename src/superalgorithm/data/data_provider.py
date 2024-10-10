@@ -1,6 +1,6 @@
 import asyncio
 from typing import Dict
-from runmachine.data.data_source import DataSource
+from superalgorithm.data.data_source import DataSource
 
 
 class DataProvider:

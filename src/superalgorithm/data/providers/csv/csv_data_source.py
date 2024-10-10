@@ -1,8 +1,8 @@
 import asyncio
 from typing import List
-from runmachine.data.data_provider import DataSource
-from runmachine.data.providers.csv import load_historical_data
-from runmachine.types.data_types import Bar
+from superalgorithm.data.data_provider import DataSource
+from superalgorithm.data.providers.csv import load_historical_data
+from superalgorithm.types.data_types import Bar
 
 
 class CSVDataSource(DataSource):

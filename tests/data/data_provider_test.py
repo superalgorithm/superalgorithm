@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import Mock
-from runmachine.data.data_provider import DataProvider
-from runmachine.data.providers.ccxt.ccxt_data_source import CCXTDataSource
-from runmachine.utils.helpers import get_lookback_timestamp
+from superalgorithm.data.data_provider import DataProvider
+from superalgorithm.data.providers.ccxt.ccxt_data_source import CCXTDataSource
+from superalgorithm.utils.helpers import get_lookback_timestamp
 
 
 @pytest.mark.asyncio

@@ -1,8 +1,8 @@
 from abc import abstractmethod
 import asyncio
 from typing import Dict, List
-from runmachine.exchange.status_tracker import get_highest_timestamp
-from runmachine.types.data_types import (
+from superalgorithm.exchange.status_tracker import get_highest_timestamp
+from superalgorithm.types.data_types import (
     ExchangeType,
     Order,
     OrderType,
@@ -13,8 +13,8 @@ from runmachine.types.data_types import (
     Balances,
     Position,
 )
-from runmachine.utils.event_emitter import EventEmitter
-from runmachine.utils.logging import (
+from superalgorithm.utils.event_emitter import EventEmitter
+from superalgorithm.utils.logging import (
     log_message,
     log_order,
     log_position,

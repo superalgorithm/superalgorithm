@@ -3,9 +3,12 @@ from typing import Dict
 import uuid
 import warnings
 
-# from runmachine.exchange.position import Position
-from runmachine.exchange.status_tracker import get_highest_timestamp, get_latest_price
-from runmachine.types.data_types import (
+# from superalgorithm.exchange.position import Position
+from superalgorithm.exchange.status_tracker import (
+    get_highest_timestamp,
+    get_latest_price,
+)
+from superalgorithm.types.data_types import (
     BalanceData,
     Balances,
     ExchangeType,
@@ -16,9 +19,9 @@ from runmachine.types.data_types import (
     TradeType,
     Position,
 )
-from runmachine.exchange.base_exchange import BaseExchange, InsufficientFundsError
-from runmachine.utils.logging import log_message, log_order
-from runmachine.exchange.status_tracker import get_latest_price
+from superalgorithm.exchange.base_exchange import BaseExchange, InsufficientFundsError
+from superalgorithm.utils.logging import log_message, log_order
+from superalgorithm.exchange.status_tracker import get_latest_price
 
 
 class PaperExchange(BaseExchange):
@@ -40,7 +43,7 @@ class PaperExchange(BaseExchange):
 
         if associated_order is None:
             warnings.warn(
-                f"got trade with order id {trade_response_json.get("server_order_id")}, but cannot find order"
+                f"got trade with order id {trade_response_json.get('server_order_id')}, but cannot find order"
             )
             return None
 
