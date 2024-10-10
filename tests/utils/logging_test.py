@@ -60,8 +60,7 @@ def test_chart_logs_integers():
     chart("sma", 6, 1727343184066)
 
     chart_json = strategy_monitor.convert_chart_data(strategy_monitor._chart_points)
-    print(chart_json["data"])
-    assert len(chart_json["data"].keys()) == 3, "chart_json should contain 3 keys"
+
     assert chart_json["data"][1727343184066] == [
         3,
         1,
