@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "superalgorithm"
-version = "0.0.6"
+version = "0.0.7"
 description = "Python framework for algorithmic trading"
 readme = "README.md"
 authors = [
@@ -31,7 +31,7 @@ dependencies = [
     "pyyaml>=6.0.2",
     "ccxt>=4.3.79",
     "numpy>=2.0.1",
-    "requests>=2.32.3"
+    "requests>=2.32.3",
 ]
 requires-python = ">=3.8"
 
@@ -46,8 +46,8 @@ dev = [
     "tomli-w",
 ]
 
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-
 [project.urls]
 Homepage = "https://github.com/superalgorithm/superalgorithm"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
