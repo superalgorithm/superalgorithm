@@ -1,32 +1,39 @@
 [build-system]
-requires      = ["setuptools>=61.0.0", "wheel"]
+requires = [
+    "setuptools>=61.0.0",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "superalgorithm"
-version = "0.0.1"
+version = "0.0.3"
 description = "Python framework for algorithmic trading"
 readme = "README.md"
-license = { file = "LICENSE" }
-authors = [{ name = "Super Algorithm", email = "hello@superalgorithm.com" }]
+authors = [
+    { name = "Super Algorithm", email = "hello@superalgorithm.com" },
+]
 classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
-    'License :: OSI Approved :: GNU General Public License (GPL)',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 keywords = [
-    'project-superalgorithm',
-    'superalgorithm',
+    "project-superalgorithm",
+    "superalgorithm",
 ]
 dependencies = [
-    "ccxt >= 4.3.77"
+    "ccxt >= 4.3.77",
 ]
 requires-python = ">=3.8"
+
+[project.license]
+file = "LICENSE"
 
 [project.optional-dependencies]
 dev = []
