@@ -1,8 +1,8 @@
 import asyncio
 import pytest
-from runmachine.exchange.paper_exchange import PaperExchange
-from runmachine.exchange.status_tracker import update_mark_ts
-from runmachine.utils.logging import (
+from superalgorithm.exchange.paper_exchange import PaperExchange
+from superalgorithm.exchange.status_tracker import update_mark_ts
+from superalgorithm.utils.logging import (
     set_chart_schema,
     annotate,
     log_exception,
@@ -11,7 +11,7 @@ from runmachine.utils.logging import (
     log_trade,
     log_order,
 )
-from runmachine.types.data_types import (
+from superalgorithm.types.data_types import (
     OHLCV,
     ChartPointDataType,
     ChartSchema,
@@ -22,8 +22,8 @@ from runmachine.types.data_types import (
     Trade,
     TradeType,
 )
-from runmachine.utils.helpers import get_now_ts
-from runmachine.utils.logging import strategy_monitor
+from superalgorithm.utils.helpers import get_now_ts
+from superalgorithm.utils.logging import strategy_monitor
 
 # we reset the strategy_monitor as the other tests create a lot of data and we don't want that reported here.
 strategy_monitor.clear()
@@ -151,7 +151,8 @@ async def test_scheduled_run():
     strategy_monitor.set_upload_interval(2)
     strategy_monitor.on("upload_complete", lambda: upload_complete_fut.set_result(None))
 
-    asyncio.gather(strategy_monitor.start(), return_exceptions=True)
+    strategy_monitor.start()
+    # asyncio.gather(strategy_monitor.start(), return_exceptions=True)
 
     await upload_complete_fut
 

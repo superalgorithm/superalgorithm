@@ -1,5 +1,5 @@
 from typing import List
-from runmachine.types.data_types import SessionStats, Trade, TradeJournal, TradeType
+from superalgorithm.types.data_types import SessionStats, Trade, TradeJournal, TradeType
 
 
 def trade_journal(starting_balance: float, closed_trades: List[Trade]) -> TradeJournal:

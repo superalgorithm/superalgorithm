@@ -1,7 +1,7 @@
 from typing import List, Dict, Tuple
 from abc import ABC, abstractmethod
-from runmachine.data.ohlcv_aggregator import OHLCVAggregator
-from runmachine.types.data_types import OHLCV, AggregatorResult, Bar
+from superalgorithm.data.ohlcv_aggregator import OHLCVAggregator
+from superalgorithm.types.data_types import OHLCV, AggregatorResult, Bar
 
 
 class DataSource(ABC):

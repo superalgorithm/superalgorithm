@@ -5,7 +5,7 @@ import warnings
 import traceback
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from runmachine.types.data_types import (
+from superalgorithm.types.data_types import (
     OHLCV,
     AnnotationPoint,
     ChartPoint,
@@ -17,11 +17,11 @@ from runmachine.types.data_types import (
     Trade,
     Position,
 )
-from runmachine.utils.api_client import upload_log
-from runmachine.utils.helpers import guid
-from runmachine.utils.event_emitter import EventEmitter
-from runmachine.utils.helpers import get_now_ts
-from runmachine.utils.config import config
+from superalgorithm.utils.api_client import upload_log
+from superalgorithm.utils.helpers import guid
+from superalgorithm.utils.event_emitter import EventEmitter
+from superalgorithm.utils.helpers import get_now_ts
+from superalgorithm.utils.config import config
 
 
 class StrategyMonitor(EventEmitter):
@@ -75,7 +75,7 @@ class StrategyMonitor(EventEmitter):
 
     def add_data_point(self, data_point: Any, timestamp=None):
         # Order, Trade, ChartPoint and AnnotationPoint use the highest timestamp seen by the strategy to support backtesting.
-        from runmachine.exchange.status_tracker import get_highest_timestamp
+        from superalgorithm.exchange.status_tracker import get_highest_timestamp
 
         if isinstance(data_point, MonitoringPoint):
             data_point.timestamp = get_now_ts() if timestamp is None else timestamp
@@ -235,7 +235,7 @@ class StrategyMonitor(EventEmitter):
 
             print("Nothing to upload. Skipping upload.")
         except Exception as e:
-            from runmachine.utils.logging import log_exception
+            from superalgorithm.utils.logging import log_exception
 
             log_exception(e, "Uploading log failed")
 

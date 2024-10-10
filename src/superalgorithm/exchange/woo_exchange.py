@@ -1,6 +1,6 @@
 from typing import Any
-from runmachine.exchange.ccxt_exchange import CCXTExchange
-from runmachine.types.data_types import Order
+from superalgorithm.exchange.ccxt_exchange import CCXTExchange
+from superalgorithm.types.data_types import Order
 
 
 class WOOExchange(CCXTExchange):

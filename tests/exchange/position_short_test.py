@@ -1,5 +1,5 @@
 import pytest
-from runmachine.types.data_types import PositionType, Trade, TradeType, Position
+from superalgorithm.types.data_types import PositionType, Trade, TradeType, Position
 
 
 @pytest.fixture(scope="session")

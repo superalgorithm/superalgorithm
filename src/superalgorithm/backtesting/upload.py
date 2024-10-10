@@ -1,6 +1,6 @@
-from runmachine.utils.api_client import api_call
-from runmachine.utils.logging import log_exception
-from runmachine.utils.logging import strategy_monitor
+from superalgorithm.utils.api_client import api_call
+from superalgorithm.utils.logging import log_exception
+from superalgorithm.utils.logging import strategy_monitor
 
 
 async def upload_backtest(initial_cash: int = 10000):

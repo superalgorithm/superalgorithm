@@ -1,6 +1,6 @@
 from collections import defaultdict
 from typing import DefaultDict, List
-from runmachine.types.data_types import OHLCV
+from superalgorithm.types.data_types import OHLCV
 
 
 class DataStore:

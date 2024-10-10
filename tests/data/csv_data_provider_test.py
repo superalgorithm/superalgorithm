@@ -1,6 +1,6 @@
 import pytest
 
-from runmachine.data.providers.csv import CSVDataSource
+from superalgorithm.data.providers.csv import CSVDataSource
 
 
 @pytest.mark.asyncio

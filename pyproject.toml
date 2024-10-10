@@ -46,5 +46,8 @@ dev = [
     "tomli-w",
 ]
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
 [project.urls]
 Homepage = "https://github.com/superalgorithm/superalgorithm"

@@ -1,11 +1,10 @@
 import pytest
-from runmachine.backtesting.analytics import session_stats
-from runmachine.types import PositionType
-from runmachine.types.data_types import Trade, TradeType
-from runmachine.utils.helpers import get_now_ts
+from superalgorithm.backtesting.analytics import session_stats
+from superalgorithm.types import PositionType
+from superalgorithm.types.data_types import Trade, TradeType
+from superalgorithm.utils.helpers import get_now_ts
 
 
-@pytest.mark.asyncio
 async def test_backtest_results():
 
     closed_trades = [

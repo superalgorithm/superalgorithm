@@ -1,7 +1,7 @@
 import pytest
 
-from runmachine.data.ohlcv_aggregator import OHLCVAggregator
-from runmachine.types import OHLCV
+from superalgorithm.data.ohlcv_aggregator import OHLCVAggregator
+from superalgorithm.types import OHLCV
 
 # binance static test data
 hourly = [

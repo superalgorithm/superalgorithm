@@ -2,7 +2,7 @@ import os
 import csv
 import csv
 from typing import List
-from runmachine.types import OHLCV
+from superalgorithm.types import OHLCV
 
 
 def append_to_csv(file_path, data):

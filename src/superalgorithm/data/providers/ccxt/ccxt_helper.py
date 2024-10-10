@@ -2,11 +2,11 @@ import ccxt
 import time
 from typing import List, Optional
 from ccxt.base.errors import NetworkError, ExchangeError
-from runmachine.data.providers.csv.csv_helper import append_to_csv
-from runmachine.types import OHLCV
-from runmachine.utils.config import config
-from runmachine.utils.helpers import get_now_ts
-from runmachine.utils.logging import log_exception, log_message
+from superalgorithm.data.providers.csv.csv_helper import append_to_csv
+from superalgorithm.types import OHLCV
+from superalgorithm.utils.config import config
+from superalgorithm.utils.helpers import get_now_ts
+from superalgorithm.utils.logging import log_exception, log_message
 
 
 def fetch_ohlcv(

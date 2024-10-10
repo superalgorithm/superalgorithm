@@ -1,8 +1,8 @@
 import requests
 import hmac
 import hashlib
-from runmachine.utils.config import config
-from runmachine.utils.helpers import get_now_ts, guid
+from superalgorithm.utils.config import config
+from superalgorithm.utils.helpers import get_now_ts, guid
 
 
 def _sign_request(secret, nonce, timestamp):

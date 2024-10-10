@@ -1,8 +1,8 @@
 import pytest
-from runmachine.backtesting.upload import upload_backtest
-from runmachine.exchange.status_tracker import update_mark_ts
-from runmachine.types.data_types import OHLCV, ChartPointDataType, ChartSchema
-from runmachine.utils.logging import annotate, chart, set_chart_schema
+from superalgorithm.backtesting.upload import upload_backtest
+from superalgorithm.exchange.status_tracker import update_mark_ts
+from superalgorithm.types.data_types import OHLCV, ChartPointDataType, ChartSchema
+from superalgorithm.utils.logging import annotate, chart, set_chart_schema
 
 
 def create_test_chart():

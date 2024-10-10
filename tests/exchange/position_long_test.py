@@ -1,7 +1,7 @@
 import pytest
 
-# from runmachine.exchange.position import Position
-from runmachine.types.data_types import PositionType, Trade, TradeType, Position
+# from superalgorithm.exchange.position import Position
+from superalgorithm.types.data_types import PositionType, Trade, TradeType, Position
 
 import pytest
 
