@@ -61,7 +61,7 @@ jobs:
 
       - name: Create Pull Request for version bump
         id: create-pr
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           base: main
           title: 'Bump version to ${{ steps.bump-version.outputs.new_version }}'
@@ -93,8 +93,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    #   - name: Delete version bump branch
-    #     run: |
-    #       git push origin --delete version-bump
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete version bump branch
+        run: |
+          git push origin --delete version-bump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
