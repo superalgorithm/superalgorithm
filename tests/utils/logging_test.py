@@ -25,8 +25,12 @@ from superalgorithm.types.data_types import (
 from superalgorithm.utils.helpers import get_now_ts
 from superalgorithm.utils.logging import strategy_monitor
 
+
 # we reset the strategy_monitor as the other tests create a lot of data and we don't want that reported here.
-strategy_monitor.clear()
+@pytest.fixture(scope="module", autouse=True)
+def clear_strategy_monitor_once():
+    # This will run once before any tests in this module
+    strategy_monitor.clear()
 
 
 def test_monitor_only_logs_one():
