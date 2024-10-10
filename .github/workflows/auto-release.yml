@@ -29,7 +29,7 @@ jobs:
       #   run: echo "${{ secrets.CONFIG_YAML }}" > config.yaml
       - name: Write secret to config.yaml
         run: |
-          python -c "import os; file = open('.config.yaml', 'w'); file.write(os.environ['CONFIG_YAML']); file.close()"
+          python -c "import os; file = open('config.yaml', 'w'); file.write(os.environ['CONFIG_YAML']); file.close()"
         shell: bash
         env:
           CONFIG_YAML : ${{secrets.CONFIG_YAML}}
