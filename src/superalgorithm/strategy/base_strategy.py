@@ -8,10 +8,13 @@ from superalgorithm.data.data_store import DataStore
 from superalgorithm.exchange.base_exchange import BaseExchange
 from superalgorithm.types.data_types import (
     OHLCV,
+    Balances,
     Bar,
     ExchangeType,
     ExecutionMode,
+    Order,
     OrderType,
+    Position,
     PositionType,
 )
 from superalgorithm.utils.event_emitter import EventEmitter
@@ -208,6 +211,18 @@ class BaseStrategy(EventEmitter):
         Returns the last ohlcv value for the given source and timeframe, including any in progress bar aggregates.
         """
         return self.data_store.last(source_id, timeframe)
+
+    async def cancel_order(self, order: Order) -> bool:
+        return await self.exchange.cancel_order(order)
+
+    async def cancel_all_orders(self, pair: str = None) -> bool:
+        return await self.exchange.cancel_all_orders(pair)
+
+    async def get_balances(self) -> Balances:
+        return await self.exchange.get_balances()
+
+    def get_position(self, pair: str, position_type: PositionType) -> Position:
+        return self.exchange.get_or_create_position(pair, position_type)
 
     async def open(
         self,
