@@ -310,7 +310,7 @@ class Position:
         data_dict["position_type"] = self.position_type.value
         data_dict["balance"] = self.balance
         data_dict["average_open"] = self.average_open
-        data_dict["pnl"] = self.get_total_pnl
+        data_dict["pnl"] = self.total_pnl
         data_dict["timestamp"] = self.createdAt
         # data_dict["trades"] = [trade.to_dict() for trade in self.trades]
 
@@ -339,7 +339,7 @@ class Position:
         return 0
 
     @property
-    def get_total_pnl(self):
+    def total_pnl(self):
         return sum(
             trades.pnl for trades in self.trades if trades.trade_type == TradeType.CLOSE
         )

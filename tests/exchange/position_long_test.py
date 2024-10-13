@@ -46,7 +46,7 @@ def test_add_close_trade(position):
     assert position.balance == 0
     assert position.average_open == 0
     assert position.get_trade("2").pnl == 1000
-    assert position.get_total_pnl == 1000
+    assert position.total_pnl == 1000
 
 
 def test_reopen_position(position):
@@ -100,7 +100,7 @@ def test_partial_close_trade(position):
     assert position.balance == 150
     assert position.average_open == 15
     assert position.get_trade("5").pnl == 0
-    assert position.get_total_pnl == 1000
+    assert position.total_pnl == 1000
 
 
 def test_full_close_trade(position):
@@ -119,4 +119,4 @@ def test_full_close_trade(position):
     assert position.balance == 100
     assert position.average_open == 15
     assert position.get_trade("6").pnl == -250
-    assert position.get_total_pnl == 1000 - 250
+    assert position.total_pnl == 1000 - 250
