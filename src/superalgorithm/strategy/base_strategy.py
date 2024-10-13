@@ -199,13 +199,13 @@ class BaseStrategy(EventEmitter):
 
     def data(self, source_id: str, timeframe: str) -> List[OHLCV]:
         """
-        Returns the list of bars for a given source and timeframe.
+        Returns the list of ohlcv values for a given source and timeframe.
         """
         return self.data_store.list(source_id, timeframe)
 
     def get(self, source_id: str, timeframe: str) -> OHLCV:
         """
-        Returns the last bar for a given source and timeframe.
+        Returns the last ohlcv value for the given source and timeframe, including any in progress bar aggregates.
         """
         return self.data_store.last(source_id, timeframe)
 
