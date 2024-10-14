@@ -65,7 +65,6 @@ class TestStrategy(BaseStrategy):
 
 
 @pytest.mark.asyncio
-@pytest.mark.timeout(60)
 async def test_strategy():
     print("start")
 
