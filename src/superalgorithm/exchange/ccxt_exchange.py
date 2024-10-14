@@ -197,9 +197,11 @@ class CCXTExchange(BaseExchange):
         """
         success = []
         for order in self.orders.values():
-            if pair is None or order.pair == pair:
+            if (
+                pair is None or order.pair == pair
+            ) and order.order_status == OrderStatus.OPEN:
                 success.append(await self.cancel_order(order))
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(1)
         return all(success)
 
     async def _get_balances(self) -> Balances:

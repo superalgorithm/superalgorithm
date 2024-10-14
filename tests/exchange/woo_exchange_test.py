@@ -17,7 +17,7 @@ ccxt_config = {"apiKey": api_key, "secret": api_secret, "uid": app_id}
 symbol = "FTM/USDT:USDT"
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def setup_exchange():
     exchange = WOOExchange(config=ccxt_config)
     exchange.start()
@@ -73,8 +73,8 @@ async def execute_order_and_wait_close(
     return order
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_open_long2(setup_exchange):
-
     exchange, mark_price, quantity = setup_exchange
 
     order = await execute_order_and_wait_close(
@@ -97,6 +97,7 @@ async def test_open_long2(setup_exchange):
     assert exchange.positions[symbol][PositionType.LONG].balance == 0
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_cancel_order(setup_exchange):
     exchange, mark_price, quantity = setup_exchange
 
@@ -112,6 +113,7 @@ async def test_cancel_order(setup_exchange):
     assert exchange.orders[order.client_order_id].order_status == OrderStatus.CANCELED
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_cancel_all_orders(setup_exchange):
     exchange, mark_price, quantity = setup_exchange
     order = await exchange.open(
@@ -136,23 +138,26 @@ async def test_cancel_all_orders(setup_exchange):
     assert exchange.orders[order2.client_order_id].order_status == OrderStatus.CANCELED
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_rejected_order(setup_exchange):
 
     exchange, mark_price, quantity = setup_exchange
     order = await exchange.open(
-        symbol, PositionType.LONG, 0.0000000001, "open", mark_price - 0.1
+        symbol, PositionType.LONG, 0.0000000001, OrderType.LIMIT, mark_price - 0.1
     )
 
     assert exchange.orders[order.client_order_id].order_status == OrderStatus.REJECTED
     assert exchange.orders[order.client_order_id].filled == 0
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_get_balances(setup_exchange):
     exchange, mark_price, quantity = setup_exchange
     balances = await exchange.get_balances()
     assert balances.free["USDT"] >= 0
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_hedge_mode(setup_exchange):
 
     exchange, mark_price, quantity = setup_exchange
@@ -178,6 +183,7 @@ async def test_hedge_mode(setup_exchange):
     assert order2.order_status == OrderStatus.CANCELED
 
 
+@pytest.mark.asyncio(loop_scope="module")
 async def test_market_order(setup_exchange):
 
     exchange, mark_price, quantity = setup_exchange
