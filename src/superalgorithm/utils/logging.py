@@ -268,7 +268,7 @@ def chart(name: str, value: Union[float, OHLCV], timestamp=None):
         )
     elif isinstance(value, float) and schema.data_type != ChartPointDataType.FLOAT:
         raise ValueError(
-            f"Chart schema for {name} is not float. Use chart with float value."
+            f"Chart schema for {name} is not float. Use chart with OHLCV value."
         )
 
     if value is None:

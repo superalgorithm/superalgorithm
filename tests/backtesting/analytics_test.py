@@ -65,7 +65,7 @@ async def test_backtest_results():
         ),
     ]
 
-    results = session_stats(closed_trades)
+    results = session_stats(closed_trades, initial_cash=1000)
 
     assert results is not None, "results should not be None"
     assert results.average_win == 56.25, "average win should be 56.25"
