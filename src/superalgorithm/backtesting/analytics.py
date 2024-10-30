@@ -47,8 +47,8 @@ def trade_journal(starting_balance: float, closed_trades: List[Trade]) -> TradeJ
     )
 
 
-def session_stats(trades: List[Trade]) -> SessionStats:
-    initial_cash = 1000
+def session_stats(trades: List[Trade], initial_cash: int = 10000) -> SessionStats:
+
     win_streak = 0
     loss_streak = 0
     current_win_streak = 0
