@@ -106,13 +106,14 @@ class BaseExchange(EventEmitter):
             trade.position_type = associated_order.position_type
             trade.trade_type = associated_order.trade_type
             self._on_trade(trade)
-            self.trade_queue.task_done()
+            self.trade_queue.task_done()  # TODO: move this to _process trades?
             log_trade(trade)
             await self._load_orders_forever(True)
             return True
 
         return False
 
+    # TODO: rename this method as it confilicts with the method name in the ccxt class
     async def _process_trades(self):
         """
         Processes trades from the trade queue and matches them with orders.
