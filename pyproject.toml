@@ -10,6 +10,7 @@ name = "superalgorithm"
 version = "0.0.9"
 description = "Python framework for algorithmic trading"
 readme = "README.md"
+
 authors = [
     { name = "Super Algorithm", email = "hello@superalgorithm.com" },
 ]
@@ -18,10 +19,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
     "License :: OSI Approved :: GNU General Public License (GPL)",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13"
 ]
 keywords = [
     "project-superalgorithm",
@@ -33,15 +31,15 @@ dependencies = [
     "numpy>=2.0.1",
     "requests>=2.32.3",
 ]
-requires-python = ">=3.8"
+requires-python = "~=3.13.0"
 
 [project.license]
 file = "LICENSE"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3.2",
-    "pytest-asyncio>=0.23.8",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.24.0",
     "tomli",
     "tomli-w",
 ]

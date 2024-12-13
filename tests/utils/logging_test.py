@@ -145,7 +145,7 @@ async def test_scheduled_run():
 
     upload_complete_fut = asyncio.Future()
     exchange = PaperExchange()
-    exchange.start()
+    await exchange.start()
 
     await create_dummy_order(exchange)
     await create_dummy_order(exchange)
@@ -154,10 +154,10 @@ async def test_scheduled_run():
     strategy_monitor.set_upload_interval(2)
     strategy_monitor.on("upload_complete", lambda: upload_complete_fut.set_result(None))
 
-    strategy_monitor.start()
-    # asyncio.gather(strategy_monitor.start(), return_exceptions=True)
+    await strategy_monitor.start()
 
     await upload_complete_fut
 
-    strategy_monitor.stop()
-    exchange.stop()
+    await strategy_monitor.stop()
+
+    await exchange.stop()

@@ -3,8 +3,8 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from enum import Enum
 import json
-import random
 from typing import Any, Dict, List, Optional, Union
+from superalgorithm.utils.unique_int_generator import unique_int_generator
 from superalgorithm.utils.event_emitter import EventEmitter
 from superalgorithm.utils.helpers import get_now_ts
 
@@ -79,6 +79,7 @@ class MarkPrice:
 
 
 class Order(EventEmitter):
+
     def __init__(
         self,
         pair: str,
@@ -126,9 +127,7 @@ class Order(EventEmitter):
 
     @staticmethod
     def generate_client_id() -> int:
-        current_time = int(datetime.now().timestamp())  # Current time in milliseconds
-        random_number = random.randint(0, 9999)  # Random number between 0 and 9999
-        return current_time * 10000 + random_number  # Combine to form a unique integer
+        return unique_int_generator.generate_client_id()
 
 
 @dataclass

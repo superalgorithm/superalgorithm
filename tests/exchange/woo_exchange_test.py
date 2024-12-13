@@ -20,7 +20,7 @@ symbol = "FTM/USDT:USDT"
 @pytest.fixture(scope="module")
 async def setup_exchange():
     exchange = WOOExchange(config=ccxt_config)
-    exchange.start()
+    await exchange.start()
 
     mark_price = await fetch_markprice(exchange, symbol)
 
@@ -33,11 +33,7 @@ async def setup_exchange():
 
     finally:
         await exchange.ccxt_client.close()
-        # Clean up helper to gracefully cancel async tasks
-        for task in exchange._async_tasks:
-            task.cancel()
-
-        await asyncio.gather(*exchange._async_tasks, return_exceptions=True)
+        await exchange.stop()
 
 
 async def fetch_markprice(exchange, symbol):
@@ -81,9 +77,16 @@ async def test_open_long2(setup_exchange):
         exchange, symbol, PositionType.LONG, quantity, "open", mark_price + 0.01
     )
 
-    assert exchange.orders[order.client_order_id].order_status == OrderStatus.CLOSED
-    assert exchange.orders[order.client_order_id].filled == quantity
-    assert exchange.positions[symbol][PositionType.LONG].balance == quantity
+    assert (
+        exchange.order_manager.orders[order.client_order_id].order_status
+        == OrderStatus.CLOSED
+    )
+    assert exchange.order_manager.orders[order.client_order_id].filled == quantity
+
+    assert (
+        exchange.position_manager.positions[symbol][PositionType.LONG].balance
+        == quantity
+    )
 
     # close the position
     order_close = await execute_order_and_wait_close(
@@ -91,10 +94,11 @@ async def test_open_long2(setup_exchange):
     )
 
     assert (
-        exchange.orders[order_close.client_order_id].order_status == OrderStatus.CLOSED
+        exchange.order_manager.orders[order_close.client_order_id].order_status
+        == OrderStatus.CLOSED
     )
-    assert exchange.orders[order_close.client_order_id].filled == quantity
-    assert exchange.positions[symbol][PositionType.LONG].balance == 0
+    assert exchange.order_manager.orders[order_close.client_order_id].filled == quantity
+    assert exchange.position_manager.positions[symbol][PositionType.LONG].balance == 0
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -110,7 +114,10 @@ async def test_cancel_order(setup_exchange):
     )
 
     await exchange.cancel_order(order)
-    assert exchange.orders[order.client_order_id].order_status == OrderStatus.CANCELED
+    assert (
+        exchange.order_manager.orders[order.client_order_id].order_status
+        == OrderStatus.CANCELED
+    )
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -134,8 +141,14 @@ async def test_cancel_all_orders(setup_exchange):
     response = await exchange.cancel_all_orders()
     assert response, True
 
-    assert exchange.orders[order.client_order_id].order_status == OrderStatus.CANCELED
-    assert exchange.orders[order2.client_order_id].order_status == OrderStatus.CANCELED
+    assert (
+        exchange.order_manager.orders[order.client_order_id].order_status
+        == OrderStatus.CANCELED
+    )
+    assert (
+        exchange.order_manager.orders[order2.client_order_id].order_status
+        == OrderStatus.CANCELED
+    )
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -146,8 +159,11 @@ async def test_rejected_order(setup_exchange):
         symbol, PositionType.LONG, 0.0000000001, OrderType.LIMIT, mark_price - 0.1
     )
 
-    assert exchange.orders[order.client_order_id].order_status == OrderStatus.REJECTED
-    assert exchange.orders[order.client_order_id].filled == 0
+    assert (
+        exchange.order_manager.orders[order.client_order_id].order_status
+        == OrderStatus.REJECTED
+    )
+    assert exchange.order_manager.orders[order.client_order_id].filled == 0
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -238,5 +254,5 @@ async def test_market_order(setup_exchange):
 
     await order_complete_fut
 
-    assert exchange.positions[symbol][PositionType.LONG].balance == 0
-    assert exchange.positions[symbol][PositionType.SHORT].balance == 0
+    assert exchange.position_manager.positions[symbol][PositionType.LONG].balance == 0
+    assert exchange.position_manager.positions[symbol][PositionType.SHORT].balance == 0
