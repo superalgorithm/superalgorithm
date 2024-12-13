@@ -38,7 +38,7 @@ jobs:
         env:
           SUPER_STRATEGY_ID: test
         run: |
-          python -m pytest --ignore=tests/data/ccxt_data_provider_test.py --ignore=tests/exchange/woo_exchange_test.py --ignore=tests/data/data_provider_test.py --ignore=tests/exchange/paper_exchange_test.py -s
+          python -m pytest --ignore=tests/data/ccxt_data_provider_test.py --ignore=tests/exchange/woo_exchange_test.py --ignore=tests/data/data_provider_test.py -s
 
       - name: Determine version bump type
         id: bump-type
