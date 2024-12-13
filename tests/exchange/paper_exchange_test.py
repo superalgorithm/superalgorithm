@@ -16,7 +16,6 @@ This is handled automatically by the BaseStrategy while processing data, but for
 """
 
 
-@pytest.fixture
 async def setup_exchange():
     exchange = PaperExchange(initial_cash=10000)
     await exchange.start()
