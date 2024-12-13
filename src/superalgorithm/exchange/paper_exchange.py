@@ -2,8 +2,6 @@ import asyncio
 from typing import Dict
 import uuid
 import warnings
-
-# from superalgorithm.exchange.position import Position
 from superalgorithm.exchange.status_tracker import (
     get_highest_timestamp,
     get_latest_price,
@@ -20,7 +18,7 @@ from superalgorithm.types.data_types import (
     Position,
 )
 from superalgorithm.exchange.base_exchange import BaseExchange, InsufficientFundsError
-from superalgorithm.utils.logging import log_message, log_order
+from superalgorithm.utils.logging import log_message
 from superalgorithm.exchange.status_tracker import get_latest_price
 
 
@@ -37,7 +35,7 @@ class PaperExchange(BaseExchange):
 
         When creating a `Trade` object, the associated order is found using the `server_order_id` from the orders API. To avoid race conditions in live trading—where a trade might be reported before the orders API finishes—we must `_confirm_order_creation`.
         """
-        associated_order = self.get_order_by_server_id(
+        associated_order = self.order_manager.get_order_by_server_id(
             trade_response_json.get("server_order_id")
         )
 
@@ -58,14 +56,7 @@ class PaperExchange(BaseExchange):
             server_order_id=trade_response_json.get("server_order_id"),
         )
 
-        if trade.trade_id not in self.processed_trades:
-            await self.trade_queue.put(trade)
-            self.processed_trades.add(trade.trade_id)
-
-        # here we wait until the trade is processed by the base exchange
-        # base exchange will take the trade of the queue and try to match it with the order
-        # if the order was found, the trade will be added to the position
-        await self.trade_queue.join()
+        await self.trade_manager.add(trade)
 
         self._update_cash(trade)
 
@@ -76,8 +67,6 @@ class PaperExchange(BaseExchange):
         associated_order.filled += trade.quantity
         if associated_order.filled == associated_order.quantity:
             associated_order.order_status = OrderStatus.CLOSED
-
-        log_order(associated_order)
 
         associated_order.dispatch(associated_order.order_status.value, associated_order)
 
@@ -113,11 +102,11 @@ class PaperExchange(BaseExchange):
         order.price = mark_price.mark
         return await self._create_limit_order(order)
 
-    async def _load_trades_forever(self):
+    async def sync_trades(self):
         # not implemented for paper trade, PaperExchange calls self._on_trade(trade) directly
         pass
 
-    async def _load_orders_forever(self, adhoc: bool = False):
+    async def sync_orders(self, adhoc: bool = False):
         # not implemented for paper trade, PaperExchange calls updates order status directly once trade simulation ends
         pass
 
@@ -135,8 +124,8 @@ class PaperExchange(BaseExchange):
         """
         return sum(
             position.balance * position.average_open
-            for pair in self.positions
-            for position in self.positions[pair].values()
+            for pair in self.position_manager.positions
+            for position in self.position_manager.positions[pair].values()
             if position.position_type == PositionType.SHORT
         )
 
@@ -153,7 +142,10 @@ class PaperExchange(BaseExchange):
             if self.cash < required_cash:
                 raise InsufficientFundsError("Insufficient cash to open position")
         if trade_type == TradeType.CLOSE and position_type == PositionType.LONG:
-            if self.positions[order.pair][order.position_type].balance < order.quantity:
+            if (
+                self.position_manager.positions[order.pair][order.position_type].balance
+                < order.quantity
+            ):
                 raise InsufficientFundsError(
                     f"Insufficient balance for {order.pair} to close position"
                 )
@@ -164,7 +156,10 @@ class PaperExchange(BaseExchange):
                 )
 
         if trade_type == TradeType.CLOSE and position_type == PositionType.SHORT:
-            if self.positions[order.pair][order.position_type].balance < order.quantity:
+            if (
+                self.position_manager.positions[order.pair][order.position_type].balance
+                < order.quantity
+            ):
                 raise InsufficientFundsError(
                     f"Insufficient balance for {order.pair} to close position"
                 )
@@ -180,10 +175,12 @@ class PaperExchange(BaseExchange):
         This method updates the paper trade cash balance after a trade was executed
         """
 
-        associated_order = self.get_order_by_server_id(trade.server_order_id)
+        associated_order = self.order_manager.get_order_by_server_id(
+            trade.server_order_id
+        )
 
         # based on the trade, find the position against which we traded
-        position: Position = self.positions[associated_order.pair][
+        position: Position = self.position_manager.positions[associated_order.pair][
             associated_order.position_type
         ]
 
@@ -208,8 +205,8 @@ class PaperExchange(BaseExchange):
         balances = Balances()
         balances.free["USD"] = self.cash
 
-        for pair in self.positions:
-            for position in self.positions[pair].values():
+        for pair in self.position_manager.positions:
+            for position in self.position_manager.positions[pair].values():
                 if position.position_type == PositionType.LONG:
                     balances.free[position.pair] = position.balance
 

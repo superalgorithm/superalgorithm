@@ -1,9 +1,5 @@
 import pytest
-
-# from superalgorithm.exchange.position import Position
 from superalgorithm.types.data_types import PositionType, Trade, TradeType, Position
-
-import pytest
 
 
 @pytest.fixture(scope="session")
@@ -13,7 +9,7 @@ def position():
     return position
 
 
-def test_add_first_trade(position):
+def test_add_first_trade(position: Position):
     position.add_trade(
         Trade(
             trade_id="1",
@@ -30,7 +26,7 @@ def test_add_first_trade(position):
     assert position.balance == 100
 
 
-def test_add_close_trade(position):
+def test_add_close_trade(position: Position):
     position.add_trade(
         Trade(
             trade_id="2",
@@ -49,7 +45,7 @@ def test_add_close_trade(position):
     assert position.total_pnl == 1000
 
 
-def test_reopen_position(position):
+def test_reopen_position(position: Position):
     position.add_trade(
         Trade(
             trade_id="3",
@@ -66,7 +62,7 @@ def test_reopen_position(position):
     assert position.balance == 100
 
 
-def test_add_additional_open_trade(position):
+def test_add_additional_open_trade(position: Position):
     position.add_trade(
         Trade(
             trade_id="4",
@@ -83,7 +79,7 @@ def test_add_additional_open_trade(position):
     assert position.balance == 200
 
 
-def test_partial_close_trade(position):
+def test_partial_close_trade(position: Position):
     position.add_trade(
         Trade(
             trade_id="5",
@@ -103,7 +99,7 @@ def test_partial_close_trade(position):
     assert position.total_pnl == 1000
 
 
-def test_full_close_trade(position):
+def test_full_close_trade(position: Position):
     position.add_trade(
         Trade(
             trade_id="6",

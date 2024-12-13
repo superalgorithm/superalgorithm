@@ -66,8 +66,6 @@ class TestStrategy(BaseStrategy):
 
 @pytest.mark.asyncio
 async def test_strategy():
-    print("start")
-
     complete_handler_mock_5m = Mock()
     complete_handler_mock_1h = Mock()
     backtest_done_handler_test = Mock()

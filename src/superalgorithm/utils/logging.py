@@ -18,13 +18,14 @@ from superalgorithm.types.data_types import (
     Position,
 )
 from superalgorithm.utils.api_client import upload_log
+from superalgorithm.utils.async_task_manager import AsyncTaskManager
 from superalgorithm.utils.helpers import guid
 from superalgorithm.utils.event_emitter import EventEmitter
 from superalgorithm.utils.helpers import get_now_ts
 from superalgorithm.utils.config import config
 
 
-class StrategyMonitor(EventEmitter):
+class StrategyMonitor(EventEmitter, AsyncTaskManager):
 
     _monitoring: Dict[str, MonitoringPoint] = {}
     _chart_schema: Dict[str, ChartSchema] = {}
@@ -36,13 +37,16 @@ class StrategyMonitor(EventEmitter):
     _positions: List[Position] = []
 
     def __init__(self, upload_interval: int = 10):
-        super().__init__()
+
+        EventEmitter.__init__(self)
+        AsyncTaskManager.__init__(self)
 
         self.initialized = True
         self.upload_interval = upload_interval
         self.session_id = guid()
         self.strategy_id = config.get("SUPER_STRATEGY_ID")
         self._task = None
+        self.register_task(self._upload_periodically)
 
     def set_upload_interval(self, upload_interval):
         self.upload_interval = upload_interval
@@ -62,16 +66,7 @@ class StrategyMonitor(EventEmitter):
             )
             return
 
-        self._task = asyncio.create_task(self._upload_periodically())
-        return self._task
-
-    def stop(self):
-        """
-        Stop the periodic upload process gracefully.
-        """
-        if self._task:
-            self._task.cancel()
-            self._task = None
+        return super().start()
 
     def add_data_point(self, data_point: Any, timestamp=None):
         # Order, Trade, ChartPoint and AnnotationPoint use the highest timestamp seen by the strategy to support backtesting.

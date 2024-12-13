@@ -31,7 +31,7 @@ class BaseStrategy(EventEmitter):
         self.data_provider = DataProvider()
         self.exchange = exchange
         self.data_store = DataStore()
-        self._async_tasks = []
+        # self._async_tasks = []
 
         self.mode = (
             ExecutionMode.PRELOAD
@@ -97,7 +97,7 @@ class BaseStrategy(EventEmitter):
 
         pass
 
-    async def _process_bar(self, bar):
+    async def _process_bar(self, bar: Bar):
         """
         Compute the aggregates and for each aggregation update the data store.
         """
@@ -168,12 +168,14 @@ class BaseStrategy(EventEmitter):
 
         self.init()
 
-        # TODO: most likely we can start exchanges by default...
-        self._async_tasks.extend(self.exchange.start())
+        await self.exchange.start()
+
+        # self._async_tasks.extend()
 
         # no monitoring for backtests
         if not self.mode == ExecutionMode.PAPER:
-            self._async_tasks.append(strategy_monitor.start())
+            await strategy_monitor.start()
+            # self._async_tasks.append(strategy_monitor.start())
 
         async for bar, is_live in self.data_provider.stream_data():
 
@@ -193,12 +195,13 @@ class BaseStrategy(EventEmitter):
                 await asyncio.sleep(0)
 
     async def stop(self):
-        self.exchange.stop()
-        current_task = asyncio.current_task()
-        tasks = [task for task in asyncio.all_tasks() if task is not current_task]
+
+        await self.exchange.stop()
+        await strategy_monitor.stop()
+
+        # finish any remaining tasks
+        tasks = [task for task in asyncio.all_tasks()]
         await asyncio.gather(*tasks, return_exceptions=True)
-        for task in tasks:
-            task.cancel()
 
     def data(self, source_id: str, timeframe: str) -> List[OHLCV]:
         """

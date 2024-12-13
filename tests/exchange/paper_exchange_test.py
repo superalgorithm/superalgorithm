@@ -19,13 +19,14 @@ This is handled automatically by the BaseStrategy while processing data, but for
 @pytest.fixture
 async def setup_exchange():
     exchange = PaperExchange(initial_cash=10000)
-    exchange.start()
+    await exchange.start()
 
     await asyncio.sleep(0.1)
 
-    yield exchange
-
-    exchange.stop()
+    try:
+        yield exchange
+    finally:
+        await exchange.stop()
 
 
 async def test_open_long_paper(setup_exchange):
@@ -215,7 +216,7 @@ async def test_stress_test(setup_exchange):
 
     BaseStrategy mirrors the below behavior for paper trading.
     """
-    exchange = setup_exchange
+    exchange: PaperExchange = setup_exchange
 
     order_count = 1000
     has_order = False
@@ -252,5 +253,6 @@ async def test_stress_test(setup_exchange):
     assert orders_filled == 1000
 
     strategy_monitor.clear()
+    await strategy_monitor.stop()
 
     # TODO: create market order test
