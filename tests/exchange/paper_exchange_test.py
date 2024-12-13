@@ -222,33 +222,35 @@ async def test_stress_test(setup_exchange):
     has_order = False
     orders_filled = 0
 
+    sem = asyncio.Semaphore(10)
+
     def close_handler(order):
         nonlocal has_order, orders_filled
         has_order = False
         orders_filled += 1
 
     while order_count != 0:
+        async with sem:
+            update_mark_ts("BTC/USD", int(datetime.now().timestamp() * 1000), 1)
 
-        update_mark_ts("BTC/USD", int(datetime.now().timestamp() * 1000), 1)
+            if not has_order:
 
-        if not has_order:
+                order = await exchange.open(
+                    pair="BTC/USD",
+                    position_type=PositionType.SHORT,
+                    quantity=1.0,
+                    order_type=OrderType.LIMIT,
+                    price=1.0,
+                )
 
-            order = await exchange.open(
-                pair="BTC/USD",
-                position_type=PositionType.SHORT,
-                quantity=1.0,
-                order_type=OrderType.LIMIT,
-                price=1.0,
-            )
+                order.on("CLOSED", close_handler)  # order_closed_fut.set_result(None)
+                has_order = True
 
-            order.on("CLOSED", close_handler)  # order_closed_fut.set_result(None)
-            has_order = True
+            trades_to_process = list(exchange.trade_tasks)
+            exchange.trade_tasks.clear()
+            await asyncio.gather(*trades_to_process)
 
-        trades_to_process = list(exchange.trade_tasks)
-        exchange.trade_tasks.clear()
-        await asyncio.gather(*trades_to_process)
-
-        order_count -= 1
+            order_count -= 1
 
     assert orders_filled == 1000
 
