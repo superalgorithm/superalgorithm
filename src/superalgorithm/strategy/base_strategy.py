@@ -225,7 +225,9 @@ class BaseStrategy(EventEmitter):
         return await self.exchange.get_balances()
 
     def get_position(self, pair: str, position_type: PositionType) -> Position:
-        return self.exchange.get_or_create_position(pair, position_type)
+        return self.exchange.position_manager.get_or_create_position(
+            pair, position_type
+        )
 
     async def open(
         self,
