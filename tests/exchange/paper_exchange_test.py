@@ -222,6 +222,8 @@ async def test_stress_test(setup_exchange):
     has_order = False
     orders_filled = 0
 
+    sem = asyncio.Semaphore(10)
+
     def close_handler(order):
         nonlocal has_order, orders_filled
         has_order = False
