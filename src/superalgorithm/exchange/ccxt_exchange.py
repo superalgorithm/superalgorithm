@@ -152,17 +152,18 @@ class CCXTExchange(BaseExchange):
         """
         Cancels an order on the exchange and updates the status.
         """
-        response = await self.ccxt_client.cancelOrder(
-            order.server_order_id, symbol=order.pair
-        )
-
-        log_message(f"CCXT _cancel_order response {response}")
-
-        if response["status"] == "canceled":
-            order.order_status = OrderStatus.CANCELED
-            order.dispatch(OrderStatus.CANCELED.value, order)
-            return True
-        return False
+        try:
+            response = await self.ccxt_client.cancelOrder(
+                order.server_order_id, symbol=order.pair
+            )
+            if response["status"] == "canceled":
+                order.order_status = OrderStatus.CANCELED
+                order.dispatch(OrderStatus.CANCELED.value, order)
+                return True
+            return False
+        except Exception as e:
+            log_exception(e, f"Error cancelling order {order.server_order_id}")
+            return False
 
     async def _cancel_all_orders(self, pair: str = None) -> bool:
         """
@@ -177,7 +178,7 @@ class CCXTExchange(BaseExchange):
                 pair is None or order.pair == pair
             ) and order.order_status == OrderStatus.OPEN:
                 success.append(await self.cancel_order(order))
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.5)
         return all(success)
 
     async def _get_balances(self) -> Balances:
