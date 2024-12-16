@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Dict, Optional
 import ccxt.pro as ccxt
 from ccxt import Exchange
+from ccxt import OperationFailed, OrderNotFound
 from superalgorithm.exchange.base_exchange import BaseExchange
 from superalgorithm.utils.helpers import get_now_ts
 from superalgorithm.utils.logging import log_exception, log_message
@@ -32,6 +33,7 @@ class CCXTExchange(BaseExchange):
         self.register_task(self.process_trades)
         self.register_task(self.sync_orders)
         self.register_task(self.process_orders)
+        self.register_task(self.poll_sync)
 
     def _json_to_trade_obj(self, trade_json):
         """
@@ -104,6 +106,31 @@ class CCXTExchange(BaseExchange):
                 OrderStatus.parse_order_status(order_json["status"]),
             )
 
+    async def poll_sync(self):
+        """
+        API version that polls the API endpoints, loads all recent trades and and orders and processes them.
+        Used as a backup in case the websocket connection fails.
+        """
+        since_fetch = get_now_ts()
+        interval_seconds = 10
+
+        while True:
+            try:
+                trades = await self.ccxt_client.fetchMyTrades(since=since_fetch)
+                orders = await self.ccxt_client.fetchOrders(since=since_fetch)
+
+                for trade_json in trades:
+                    self.trade_queue.put_nowait(trade_json)
+
+                for order_json in orders:
+                    self.order_queue.put_nowait(order_json)
+
+                since_fetch = get_now_ts() - 1000 * interval_seconds  # 1 minute ago
+            except Exception as e:
+                log_exception(e, "CCXT Error fetching trades.")
+
+            await asyncio.sleep(interval_seconds)
+
     async def _create_limit_order(
         self, order: Order, params: Optional[Dict] = None
     ) -> str:
@@ -157,12 +184,26 @@ class CCXTExchange(BaseExchange):
                 order.server_order_id, symbol=order.pair
             )
             if response["status"] == "canceled":
-                order.order_status = OrderStatus.CANCELED
-                order.dispatch(OrderStatus.CANCELED.value, order)
+                self.order_manager.on_order_update(
+                    order.client_order_id, order.filled, OrderStatus.CANCELED
+                )
                 return True
             return False
+
+        except OrderNotFound:
+            log_message(f"OrderNotFound when cancelling order {order.server_order_id}")
+            return False
+
+        except OperationFailed as e:
+            log_exception(
+                e, f"OperationFailed when cancelling order {order.server_order_id}"
+            )
+            return False
+
         except Exception as e:
-            log_exception(e, f"Error cancelling order {order.server_order_id}")
+            log_exception(
+                e, f"Unexpected error when cancelling order {order.server_order_id}"
+            )
             return False
 
     async def _cancel_all_orders(self, pair: str = None) -> bool:
@@ -171,6 +212,7 @@ class CCXTExchange(BaseExchange):
 
         Notes:
             - Cancels each order individually via _cancel_order, and may trigger rate limits, but is preferred as CCXT returns inconsitent responses per exchange.
+            - also this way we can cancel all orders managed by the strategy vs. all orders on the account.
         """
         success = []
         for order in self.order_manager.orders.values():

@@ -9,6 +9,7 @@ def guid() -> str:
 
 
 def get_now_ts() -> int:
+    """Timestamp in milliseconds for the current time."""
     return int(datetime.now().timestamp() * 1000)
 
 
