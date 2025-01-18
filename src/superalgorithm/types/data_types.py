@@ -113,7 +113,6 @@ class Order(EventEmitter):
         data_dict["position_type"] = self.position_type.value
         data_dict["trade_type"] = self.trade_type.value
         data_dict["quantity"] = self.quantity
-        data_dict["quantity"] = self.quantity
         data_dict["order_type"] = self.order_type.value
         data_dict["order_status"] = self.order_status.value
         data_dict["client_order_id"] = self.client_order_id

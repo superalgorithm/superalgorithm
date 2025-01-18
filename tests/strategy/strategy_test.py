@@ -66,6 +66,7 @@ class TestStrategy(BaseStrategy):
 
 @pytest.mark.asyncio
 async def test_strategy():
+
     complete_handler_mock_5m = Mock()
     complete_handler_mock_1h = Mock()
     backtest_done_handler_test = Mock()
@@ -115,3 +116,14 @@ async def test_strategy():
     assert len(strategy.data("BTC/USDT", "5m")) == num_records
 
     assert backtest_done_handler_test.call_count == 1
+
+    # import json
+
+    # serialized_data = strategy_monitor.serialize()
+
+    # # Convert the dictionary to a JSON string
+    # json_data = json.dumps(serialized_data, indent=4)  # `indent` makes it more readable
+    # print(json_data)
+    # # Print or save the JSON data
+    # with open("strategy_monitor.json", "w") as file:
+    #     file.write(json_data)

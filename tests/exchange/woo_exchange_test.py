@@ -14,12 +14,13 @@ api_secret = config.get("ccxt_config")["secret"]
 app_id = config.get("ccxt_config")["uid"]
 ccxt_config = {"apiKey": api_key, "secret": api_secret, "uid": app_id}
 
-symbol = "FTM/USDT:USDT"
+symbol = "PNUT/USDT:USDT"
 
 
 @pytest.fixture(scope="module")
 async def setup_exchange():
     exchange = WOOExchange(config=ccxt_config)
+
     await exchange.start()
 
     mark_price = await fetch_markprice(exchange, symbol)

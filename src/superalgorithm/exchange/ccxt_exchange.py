@@ -24,6 +24,10 @@ class CCXTExchange(BaseExchange):
 
         super().__init__()
 
+        self.TRADE_LOOKBACK_SECONDS = config.get("TRADE_LOOKBACK_SECONDS", 10)
+        self.ORDER_LOOKBACK_SECONDS = config.get("ORDER_LOOKBACK_SECONDS", 600)
+        self.POLL_INTERVAL_SECONDS = config.get("POLL_INTERVAL_SECONDS", 10)
+
         self.ccxt_client: Exchange = getattr(ccxt, exchange_id)(config)
 
         self.trade_queue = asyncio.Queue()
@@ -111,25 +115,38 @@ class CCXTExchange(BaseExchange):
         API version that polls the API endpoints, loads all recent trades and and orders and processes them.
         Used as a backup in case the websocket connection fails.
         """
-        since_fetch = get_now_ts()
-        interval_seconds = 10
+        last_trade_fetch_time = get_now_ts()
+        last_order_fetch_time = get_now_ts()
 
         while True:
             try:
-                trades = await self.ccxt_client.fetchMyTrades(since=since_fetch)
-                orders = await self.ccxt_client.fetchOrders(since=since_fetch)
+                await self.fetch_and_process_trades(
+                    since_timestamp=last_trade_fetch_time
+                )
+                await self.fetch_and_process_orders(
+                    since_timestamp=last_order_fetch_time
+                )
 
-                for trade_json in trades:
-                    self.trade_queue.put_nowait(trade_json)
-
-                for order_json in orders:
-                    self.order_queue.put_nowait(order_json)
-
-                since_fetch = get_now_ts() - 1000 * interval_seconds  # 1 minute ago
+                last_trade_fetch_time = (
+                    get_now_ts() - 1000 * self.TRADE_LOOKBACK_SECONDS
+                )
+                last_order_fetch_time = (
+                    get_now_ts() - 1000 * self.ORDER_LOOKBACK_SECONDS
+                )
             except Exception as e:
-                log_exception(e, "CCXT Error fetching trades.")
+                log_exception(e, "CCXT Error syncing trades and orders.")
 
-            await asyncio.sleep(interval_seconds)
+            await asyncio.sleep(self.POLL_INTERVAL_SECONDS)
+
+    async def fetch_and_process_trades(self, since_timestamp):
+        trades = await self.ccxt_client.fetchMyTrades(since=since_timestamp)
+        for trade_json in trades:
+            self.trade_queue.put_nowait(trade_json)
+
+    async def fetch_and_process_orders(self, since_timestamp):
+        orders = await self.ccxt_client.fetchOrders(since=since_timestamp)
+        for order_json in orders:
+            self.order_queue.put_nowait(order_json)
 
     async def _create_limit_order(
         self, order: Order, params: Optional[Dict] = None
