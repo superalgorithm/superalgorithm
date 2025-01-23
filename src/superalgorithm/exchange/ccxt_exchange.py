@@ -2,9 +2,9 @@ import asyncio
 from typing import Any, Dict, Optional
 import ccxt.pro as ccxt
 from ccxt import Exchange
-from ccxt import OperationFailed, OrderNotFound
+from ccxt import OperationFailed, OrderNotFound, RateLimitExceeded
 from superalgorithm.exchange.base_exchange import BaseExchange
-from superalgorithm.utils.helpers import get_now_ts
+from superalgorithm.utils.helpers import get_exponential_backoff_delay, get_now_ts
 from superalgorithm.utils.logging import log_exception, log_message
 from superalgorithm.types.data_types import (
     BalanceData,
@@ -205,6 +205,7 @@ class CCXTExchange(BaseExchange):
                     order.client_order_id, order.filled, OrderStatus.CANCELED
                 )
                 return True
+
             return False
 
         except OrderNotFound:
@@ -223,6 +224,34 @@ class CCXTExchange(BaseExchange):
             )
             return False
 
+    async def _cancel_with_retry(self, order: Order) -> bool:
+        """
+        Cancels an order on the exchange and retries in case of an error.
+        """
+        max_retries = 2
+        attempt = 1
+
+        while attempt <= max_retries:
+            if await self._cancel_order(order):
+                return True
+            else:
+                delay = get_exponential_backoff_delay(attempt)
+                log_message(
+                    f"Retrying cancel order {order.server_order_id} in {delay:.2f} seconds",
+                    "INFO",
+                )
+                await asyncio.sleep(delay)
+                attempt += 1
+
+        self.order_manager.on_order_update(
+            order.client_order_id, order.filled, OrderStatus.EXPIRED
+        )
+        log_message(
+            f"Failed to cancel order {order.server_order_id} after {max_retries} attempts",
+            "ERROR",
+        )
+        return False
+
     async def _cancel_all_orders(self, pair: str = None) -> bool:
         """
         Cancels all open orders, optionally filtered by a specific trading pair.
@@ -236,8 +265,17 @@ class CCXTExchange(BaseExchange):
             if (
                 pair is None or order.pair == pair
             ) and order.order_status == OrderStatus.OPEN:
-                success.append(await self.cancel_order(order))
-                await asyncio.sleep(0.5)
+                try:
+                    result = await self._cancel_with_retry(order)
+                    success.append(result)
+                except RateLimitExceeded as e:
+                    log_exception(e, "RateLimitExceeded when cancelling all orders")
+                    await asyncio.sleep(5)
+                    result = await self._cancel_with_retry(order)
+                    success.append(result)
+                await asyncio.sleep(0.1)
+        if not all(success):
+            log_message("Some orders failed to cancel", "WARN")
         return all(success)
 
     async def _get_balances(self) -> Balances:
