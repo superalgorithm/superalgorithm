@@ -26,9 +26,14 @@ class OrderManager:
         order = self.orders[client_order_id]
         order.filled = filled
 
+        order_modified = order.order_status != order_status | order.filled != filled
+
         if order.order_status != order_status:
             order.order_status = order_status
             order.dispatch(order.order_status.value, order)
+
+        if order_modified:
+            log_order(order, stdout=False)
 
     def get_order_by_server_id(self, server_order_id: str):
         for order in self.orders.values():
