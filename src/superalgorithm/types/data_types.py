@@ -111,6 +111,7 @@ class Order(EventEmitter):
         data_dict = {}
         data_dict["pair"] = self.pair
         data_dict["position_type"] = self.position_type.value
+        data_dict["price"] = self.price
         data_dict["trade_type"] = self.trade_type.value
         data_dict["quantity"] = self.quantity
         data_dict["order_type"] = self.order_type.value
