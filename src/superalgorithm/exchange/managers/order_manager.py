@@ -26,7 +26,7 @@ class OrderManager:
         order = self.orders[client_order_id]
         order.filled = filled
 
-        order_modified = order.order_status != order_status | order.filled != filled
+        order_modified = order.order_status != order_status or order.filled != filled
 
         if order.order_status != order_status:
             order.order_status = order_status
