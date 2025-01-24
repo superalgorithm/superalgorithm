@@ -12,7 +12,12 @@ from superalgorithm.utils.config import config
 api_key = config.get("ccxt_config")["api_key"]
 api_secret = config.get("ccxt_config")["secret"]
 app_id = config.get("ccxt_config")["uid"]
-ccxt_config = {"apiKey": api_key, "secret": api_secret, "uid": app_id}
+ccxt_config = {
+    "apiKey": api_key,
+    "secret": api_secret,
+    "uid": app_id,
+    "hedge_mode": True,
+}
 
 symbol = "PNUT/USDT:USDT"
 
