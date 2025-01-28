@@ -19,6 +19,10 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
     "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.13"
 ]
 keywords = [
@@ -31,7 +35,7 @@ dependencies = [
     "numpy>=2.0.1",
     "requests>=2.32.3"
 ]
-requires-python = "~=3.13.0"
+requires-python = ">=3.8"
 
 [project.license]
 file = "LICENSE"
@@ -39,7 +43,7 @@ file = "LICENSE"
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3.4",
-    "pytest-asyncio>=0.24.0",
+    "pytest-asyncio>=0.23.8",
     "tomli",
     "tomli-w",
 ]
