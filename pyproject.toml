@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "superalgorithm"
-version = "0.0.19"
+version = "0.0.20"
 description = "Python framework for algorithmic trading"
 readme = "README.md"
 authors = [
@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.13"
+    "Programming Language :: Python :: 3.13",
 ]
 keywords = [
     "project-superalgorithm",
