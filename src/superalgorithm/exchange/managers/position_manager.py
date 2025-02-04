@@ -1,5 +1,5 @@
-from typing import Dict, List
-from superalgorithm.types.data_types import Position, PositionType, Trade, TradeType
+from typing import Dict
+from superalgorithm.types.data_types import Position, PositionType, Trade
 from superalgorithm.utils.logging import log_message, log_position
 from superalgorithm.exchange.base_exchange import BaseExchange
 
@@ -29,35 +29,47 @@ class PositionManager:
         position.add_trade(trade)
         log_position(position, stdout=False)
 
-    # todo: re-evaluatie this method need
-    def list_trades(
-        self, trade_type: TradeType = None, position_type: PositionType = None
-    ) -> List[Trade]:
-        """
-        Retrieves all trades with optional filtering by trade type and position type.
-        """
-        if not self.positions:
-            return []
+    # # TODO: test if can be moved to TradeManager, then remove this method
+    # def list_trades(
+    #     self, trade_type: TradeType = None, position_type: PositionType = None
+    # ) -> List[Trade]:
+    #     """
+    #     Retrieves all trades with optional filtering by trade type and position type.
+    #     """
 
-        return [
-            trade
-            for pair_positions in self.positions.values()
-            for position in pair_positions.values()
-            if position_type is None or position.position_type == position_type
-            for trade in position.trades
-            if trade_type is None or trade.trade_type == trade_type
-        ]
+    #     warnings.warn(
+    #         "list_trades is deprecated and should be called from TradeManager.",
+    #         DeprecationWarning,
+    #     )
 
-    def get_trade(self, trade_id: str) -> Trade:
-        """
-        Retrieves a trade by id.
-        """
-        if not self.positions:
-            return None
+    #     if not self.positions:
+    #         return []
 
-        for pair_positions in self.positions.values():
-            for position in pair_positions.values():
-                for trade in position.trades:
-                    if trade.trade_id == trade_id:
-                        return trade
-        return None
+    #     return [
+    #         trade
+    #         for pair_positions in self.positions.values()
+    #         for position in pair_positions.values()
+    #         if position_type is None or position.position_type == position_type
+    #         for trade in position.trades
+    #         if trade_type is None or trade.trade_type == trade_type
+    #     ]
+
+    # # TODO: test if can be moved to TradeManager, then remove this method
+    # def get_trade(self, trade_id: str) -> Trade:
+    #     """
+    #     Retrieves a trade by id.
+    #     """
+    #     warnings.warn(
+    #         "get_trade is deprecated and should be called from TradeManager.",
+    #         DeprecationWarning,
+    #     )
+
+    #     if not self.positions:
+    #         return None
+
+    #     for pair_positions in self.positions.values():
+    #         for position in pair_positions.values():
+    #             for trade in position.trades:
+    #                 if trade.trade_id == trade_id:
+    #                     return trade
+    #     return None

@@ -80,7 +80,7 @@ async def test_open_long2(setup_exchange):
     exchange, mark_price, quantity = setup_exchange
 
     order = await execute_order_and_wait_close(
-        exchange, symbol, PositionType.LONG, quantity, "open", mark_price + 0.01
+        exchange, symbol, PositionType.LONG, quantity, "open", mark_price + 0.001
     )
 
     assert (
@@ -96,7 +96,7 @@ async def test_open_long2(setup_exchange):
 
     # close the position
     order_close = await execute_order_and_wait_close(
-        exchange, symbol, PositionType.LONG, quantity, "close", mark_price - 0.01
+        exchange, symbol, PositionType.LONG, quantity, "close", mark_price - 0.001
     )
 
     assert (

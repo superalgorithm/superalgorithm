@@ -44,6 +44,8 @@ class TestStrategy(BaseStrategy):
         self.tick_called = True
         assert isinstance(bar, Bar)
 
+        assert self.get("BTC/USDT", "5m") is not None
+
         if is_new_bar("1h"):
             self.new_bar_called = True
             assert bar.timestamp % 3600000 == 0  # Full hour
@@ -116,14 +118,3 @@ async def test_strategy():
     assert len(strategy.data("BTC/USDT", "5m")) == num_records
 
     assert backtest_done_handler_test.call_count == 1
-
-    # import json
-
-    # serialized_data = strategy_monitor.serialize()
-
-    # # Convert the dictionary to a JSON string
-    # json_data = json.dumps(serialized_data, indent=4)  # `indent` makes it more readable
-    # print(json_data)
-    # # Print or save the JSON data
-    # with open("strategy_monitor.json", "w") as file:
-    #     file.write(json_data)

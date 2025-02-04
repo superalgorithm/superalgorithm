@@ -38,8 +38,7 @@ class StrategyMonitor(EventEmitter, AsyncTaskManager):
 
     def __init__(self, upload_interval: int = 10):
 
-        EventEmitter.__init__(self)
-        AsyncTaskManager.__init__(self)
+        super().__init__()
 
         self.initialized = True
         self.upload_interval = upload_interval
@@ -51,7 +50,7 @@ class StrategyMonitor(EventEmitter, AsyncTaskManager):
     def set_upload_interval(self, upload_interval):
         self.upload_interval = upload_interval
 
-    def start(self):
+    async def start(self):
         """
         Start the periodic upload process, this is called during live trading sessions.
         """
@@ -64,9 +63,8 @@ class StrategyMonitor(EventEmitter, AsyncTaskManager):
             warnings.warn(
                 "SUPER_API_KEY, SUPER_API_SECRET, SUPER_API_ENDPOINT are required to enable live monitoring."
             )
-            return
 
-        return super().start()
+        return await super().start()
 
     def add_data_point(self, data_point: Any, timestamp=None):
         # Order, Trade, ChartPoint and AnnotationPoint use the highest timestamp seen by the strategy to support backtesting.

@@ -28,7 +28,11 @@ class DataProvider:
     async def stream_data(self):
 
         tasks = [source.connect() for source in self.data_sources.values()]
-        await asyncio.gather(*tasks, return_exceptions=True)
+        gather_result = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for result in gather_result:
+            if isinstance(result, FileNotFoundError):
+                raise result
 
         queue = asyncio.Queue()
 
@@ -45,7 +49,8 @@ class DataProvider:
                 ):  # bar is "None" when a backtest data source has no more data to send
                     self.data_sources_is_live[bar.source_id] = is_live
                 yield bar, all(self.data_sources_is_live.values())
-
+        except Exception as e:
+            print(f"Error in stream_data: {e}")
         finally:
             for task in producers:
                 task.cancel()
