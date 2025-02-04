@@ -31,7 +31,6 @@ class BaseStrategy(EventEmitter):
         self.data_provider = DataProvider()
         self.exchange = exchange
         self.data_store = DataStore()
-        # self._async_tasks = []
 
         self.mode = (
             ExecutionMode.PRELOAD
@@ -100,39 +99,58 @@ class BaseStrategy(EventEmitter):
     async def _process_bar(self, bar: Bar):
         """
         Compute the aggregates and for each aggregation update the data store.
+        Dispatch the new bars to the event handlers. Update the datastore with the latest aggregate result.
         """
         result = self.data_provider.data_sources[bar.source_id].update_aggregates(
             bar.ohlcv
         )
+
+        for source_id, timeframe, agg_result in result:
+            await self._dispatch_new_bars(source_id, timeframe, agg_result)
+
         for source_id, timeframe, agg_result in result:
             await self._update_data_store(source_id, timeframe, agg_result)
+
         update_mark_ts(bar.source_id, bar.ohlcv.timestamp, bar.ohlcv.close)
         await self.on_tick(bar)
 
     async def _update_data_store(self, source_id, timeframe, agg_result):
         """
-        Updates or appends the data store with the new bar data and dispatches the on(timeframe) events for all new bars.
-
-        Important to note that nothing happens for the first bar of any aggregation.
-        Once a new bar is detected we ensure the datastore contains the last completed bar, dispatch the event and store the new bar.
-        The users of the strategy that operate on the on(timeframe) event will receive the last completed bar from both the event hander and the datastore.
-
+        Update the data store with the latest aggregate result.
         +---------------------------------------------------------------------------+
-        08 PM           09 PM           10 PM           11 PM            12 AM
-        | bar 1         | bar 2         | bar 3         | bar 4          | ...
+        08 PM             09 PM             10 PM             11 PM              12 AM
+        | bar 1           | bar 2           | bar 3           | bar 4            | ...
+        building        + dispatch bar 1    + dispatch bar 2  + dispatch bar 3   + ...
         start ->        + append bar 1
-        building        + dispatch bar 1
-        bar 1           + user consumes bar 1
-                        + store.last contains bar 2 updates until new bar is created at 10 PM
 
+        DataStore:
+        bar 1           + store.last contains bar 2 updates until new bar is created at 10 PM
+
+        If the datastore is empty we append the first seen data as the first bar.
+        We then update that bar until we get is_new_bar_started from the aggregator, in which case we append a new bar.
+        _dispatch_new_bars is called before we update the datastore, this way the event handlers receive the last completed bar, and the datastore contains the last completed bar as well.
+        """
+
+        if len(self.data_store.list(source_id, timeframe)) == 0:
+            self.data_store.append(
+                source_id=source_id,
+                timeframe=timeframe,
+                ohlcv=agg_result.current_bar,
+            )
+        if agg_result.is_new_bar_started:
+            self.data_store.append(
+                source_id=source_id, timeframe=timeframe, ohlcv=agg_result.current_bar
+            )
+        else:
+            self.data_store.update(
+                source_id=source_id, timeframe=timeframe, ohlcv=agg_result.current_bar
+            )
+
+    async def _dispatch_new_bars(self, source_id, timeframe, agg_result):
+        """
+        Dispatches the new bars to the event handlers.
         """
         if agg_result.is_new_bar_started:
-            if len(self.data_store.list(source_id, timeframe)) == 0:
-                self.data_store.append(
-                    source_id=source_id,
-                    timeframe=timeframe,
-                    ohlcv=agg_result.last_completed_bar,
-                )
             await self.dispatch_and_await(
                 timeframe,
                 Bar(
@@ -141,13 +159,6 @@ class BaseStrategy(EventEmitter):
                     timeframe,
                     agg_result.last_completed_bar,
                 ),
-            )
-            self.data_store.append(
-                source_id=source_id, timeframe=timeframe, ohlcv=agg_result.current_bar
-            )
-        else:
-            self.data_store.update(
-                source_id=source_id, timeframe=timeframe, ohlcv=agg_result.current_bar
             )
 
     async def _process_paper_trades(self):
@@ -237,6 +248,9 @@ class BaseStrategy(EventEmitter):
         order_type: OrderType,
         price: float = 0,
     ):
+        if quantity <= 0:
+            raise ValueError("Quantity must be a positive number.")
+
         if self.mode == ExecutionMode.PRELOAD:
             warnings.warn("Skipping open order in PRELOAD mode.")
             return None
@@ -251,6 +265,9 @@ class BaseStrategy(EventEmitter):
         order_type: OrderType,
         price: float = 0,
     ):
+        if quantity <= 0:
+            raise ValueError("Quantity must be a positive number.")
+
         if self.mode == ExecutionMode.PRELOAD:
             warnings.warn("Skipping close order in PRELOAD mode.")
             return None

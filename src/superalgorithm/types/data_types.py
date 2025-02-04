@@ -106,6 +106,7 @@ class Order(EventEmitter):
         self.server_order_id = server_order_id
         self.timestamp = timestamp or int(datetime.now().timestamp())
         self.filled = filled
+        self.trades: List[Trade] = []
 
     def to_dict(self):
         data_dict = {}
@@ -124,6 +125,12 @@ class Order(EventEmitter):
 
     def to_json(self):
         return json.dumps(self.to_dict(), indent=4)
+
+    def add_trade(self, trade: Trade):
+        self.trades.append(trade)
+        # in a perfect world we could compute filled quantity based on trades, but we can't do that in the current state due to how some exchanges deduct fees:
+        # "Fees for spot/margin trades are deducted in the currency you receive. e.g. A buying order on the BTC/USDT market will have the fees charged in BTC. A selling order will have the fees charged in USDT"
+        # hence we continue to rely on the filled quantity from the exchange API
 
     @staticmethod
     def generate_client_id() -> int:

@@ -196,6 +196,7 @@ class PaperExchange(BaseExchange):
     async def _get_balances(self) -> Balances:
         balances = Balances()
         balances.free["USD"] = self.cash
+        balances.currencies["USD"] = BalanceData(self.cash, 0, self.cash, 0)
 
         for pair in self.position_manager.positions:
             for position in self.position_manager.positions[pair].values():

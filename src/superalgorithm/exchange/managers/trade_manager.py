@@ -26,6 +26,7 @@ class TradeManager(EventEmitter):
             trade.trade_type = associated_order.trade_type
             self.trades.append(trade)
             self.exchange.position_manager.add_trade(trade)
+            associated_order.add_trade(trade)
             self.dispatch("trade", trade)
             log_trade(trade, stdout=False)
             return True
