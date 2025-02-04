@@ -7,6 +7,7 @@ T = TypeVar("T", bound=Callable[..., None])
 
 class EventEmitter(ABC, Generic[T]):
     def __init__(self):
+        super().__init__()
         self.listeners: Dict[str, List[T]] = {}
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:

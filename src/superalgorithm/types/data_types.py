@@ -140,7 +140,7 @@ class Trade:
     price: float
     quantity: float
     server_order_id: str
-    pnl: int = 0
+    pnl: float = 0.0
 
     def to_dict(self):
         data_dict = asdict(self)

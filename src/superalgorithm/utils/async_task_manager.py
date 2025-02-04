@@ -10,6 +10,7 @@ class AsyncTaskManager:
         """
         Initialize the AsyncTaskManager with a list to store registered tasks.
         """
+        super().__init__()
         self._registered_tasks: List[Callable[[], Coroutine[Any, Any, Any]]] = []
         self._active_tasks: List[asyncio.Task] = []
 
@@ -36,7 +37,6 @@ class AsyncTaskManager:
 
         :return: asyncio.gather result of all tasks
         """
-
         self._active_tasks = [
             asyncio.create_task(task_func()) for task_func in self._registered_tasks
         ]
@@ -50,10 +50,9 @@ class AsyncTaskManager:
         for task in self._active_tasks:
             task.cancel()
 
-        print("Cancelling tasks")
         # Wait for tasks to be cancelled
         await asyncio.gather(*self._active_tasks, return_exceptions=True)
-        print("Cancelled")
+
         # Clear the active tasks list
         self._active_tasks.clear()
 

@@ -179,19 +179,11 @@ class PaperExchange(BaseExchange):
             trade.server_order_id
         )
 
-        # based on the trade, find the position against which we traded
-        position: Position = self.position_manager.positions[associated_order.pair][
-            associated_order.position_type
-        ]
-
-        # get the trade from our Position, which now contains the computed pnl for that trade
-        updated_trade = position.get_trade(trade_id=trade.trade_id)
-
-        trade_type = updated_trade.trade_type
+        trade_type = trade.trade_type
         position_type = associated_order.position_type
-        price = updated_trade.price
-        quantity = updated_trade.quantity
-        pnl = updated_trade.pnl
+        price = trade.price
+        quantity = trade.quantity
+        pnl = trade.pnl
 
         # compute the new cash balance based on the trade and position type (close long, open short etc.)
         if trade_type == TradeType.OPEN and position_type == PositionType.LONG:

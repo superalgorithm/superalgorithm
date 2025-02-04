@@ -26,8 +26,7 @@ class InsufficientFundsError(Exception):
 class BaseExchange(EventEmitter, AsyncTaskManager):
 
     def __init__(self):
-        EventEmitter.__init__(self)
-        AsyncTaskManager.__init__(self)
+        super().__init__()
 
         from superalgorithm.exchange.managers.order_manager import OrderManager
         from superalgorithm.exchange.managers.position_manager import PositionManager
