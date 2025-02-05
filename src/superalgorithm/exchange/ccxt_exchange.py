@@ -16,11 +16,12 @@ from superalgorithm.types.data_types import (
     Trade,
     TradeType,
 )
+from superalgorithm.utils.config import config
 
 
 class CCXTExchange(BaseExchange):
 
-    def __init__(self, exchange_id: str, config: Any = {}):
+    def __init__(self, exchange_id: str, params: Any = {}):
 
         super().__init__()
 
@@ -28,7 +29,7 @@ class CCXTExchange(BaseExchange):
         self.ORDER_LOOKBACK_SECONDS = config.get("ORDER_LOOKBACK_SECONDS", 600)
         self.POLL_INTERVAL_SECONDS = config.get("POLL_INTERVAL_SECONDS", 10)
 
-        self.ccxt_client: Exchange = getattr(ccxt, exchange_id)(config)
+        self.ccxt_client: Exchange = getattr(ccxt, exchange_id)(params)
 
         self.trade_queue = asyncio.Queue()
         self.order_queue = asyncio.Queue()
