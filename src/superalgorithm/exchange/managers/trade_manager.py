@@ -34,9 +34,9 @@ class TradeManager(EventEmitter):
             # add the trade to the order as reference
             associated_order.add_trade(trade)
 
-            self.dispatch("trade", trade)
-
             log_trade(trade, stdout=False)
+
+            self.dispatch("trade", trade)
 
             return True
 

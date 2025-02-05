@@ -103,17 +103,22 @@ class CCXTExchange(BaseExchange):
         """
         while True:
             order_json = await self.order_queue.get()
-            client_order_id = int(order_json["clientOrderId"])
-            filled = float(order_json.get("filled", 0))
-            order_status = OrderStatus.parse_order_status(order_json["status"])
+            server_order_id = order_json["id"]
+            order = self.order_manager.get_order_by_server_id(server_order_id)
+            if order is not None:
+                client_order_id = (
+                    order.client_order_id
+                )  # int(order_json["clientOrderId"])
+                filled = float(order_json.get("filled", 0))
+                order_status = OrderStatus.parse_order_status(order_json["status"])
 
-            asyncio.create_task(
-                self.order_manager.on_order_update(
-                    client_order_id,
-                    filled,
-                    order_status,
+                asyncio.create_task(
+                    self.order_manager.on_order_update(
+                        client_order_id,
+                        filled,
+                        order_status,
+                    )
                 )
-            )
 
     async def poll_sync(self):
         """
