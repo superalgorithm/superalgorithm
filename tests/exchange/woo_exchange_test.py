@@ -24,7 +24,7 @@ symbol = "PNUT/USDT:USDT"
 
 @pytest.fixture(scope="module")
 async def setup_exchange():
-    exchange = WOOExchange(config=ccxt_config)
+    exchange = WOOExchange(params=ccxt_config)
 
     await exchange.start()
 

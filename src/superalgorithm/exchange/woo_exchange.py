@@ -4,10 +4,10 @@ from superalgorithm.types.data_types import Order
 
 
 class WOOExchange(CCXTExchange):
-    def __init__(self, config: Any = {}):
-        super().__init__("woo", config)
+    def __init__(self, params: Any = {}):
+        super().__init__("woo", params)
 
-        self.hedge_mode = config.get("hedge_mode", False)
+        self.hedge_mode = params.get("hedge_mode", False)
 
     def _create_order_params(self, order: Order) -> dict:
         params = {
