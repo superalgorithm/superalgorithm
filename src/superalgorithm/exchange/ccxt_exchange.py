@@ -25,9 +25,9 @@ class CCXTExchange(BaseExchange):
 
         super().__init__()
 
-        self.TRADE_LOOKBACK_SECONDS = config.get("TRADE_LOOKBACK_SECONDS", 10)
+        self.TRADE_LOOKBACK_SECONDS = config.get("TRADE_LOOKBACK_SECONDS", 60)
         self.ORDER_LOOKBACK_SECONDS = config.get("ORDER_LOOKBACK_SECONDS", 600)
-        self.POLL_INTERVAL_SECONDS = config.get("POLL_INTERVAL_SECONDS", 10)
+        self.POLL_INTERVAL_SECONDS = config.get("POLL_INTERVAL_SECONDS", 60)
 
         self.ccxt_client: Exchange = getattr(ccxt, exchange_id)(params)
 
@@ -61,9 +61,8 @@ class CCXTExchange(BaseExchange):
 
     async def sync_trades(self):
         """
-        Starts the continous loading routine for receiving trade updates.
+        Starts the continous loading routine for receiving trade updates from the web socket.
         """
-
         while True:
             try:
                 trades = await self.ccxt_client.watch_my_trades()
@@ -72,18 +71,21 @@ class CCXTExchange(BaseExchange):
 
             except Exception as e:
                 log_exception(e, "CCXT Error watching trades.")
-                await asyncio.sleep(
-                    1
-                )  # sleep to not throw the same error in a while loop
+                # give some time for the socket error to resolve before continuing
+                await asyncio.sleep(1)
 
     async def process_trades(self):
+        """
+        Pop a trade from the queue and add it to the trade manager.
+        """
         while True:
             trade_json = await self.trade_queue.get()
-            await self.trade_manager.add(self._json_to_trade_obj(trade_json))
+            trade = self._json_to_trade_obj(trade_json)
+            await self.trade_manager.add(trade)
 
     async def sync_orders(self):
         """
-        Continously monitor orders to sync the local order status with the orders on the exchange.
+        Continously monitor orders via web socket to sync order status and filled qty.
         """
         while True:
             try:
@@ -92,59 +94,54 @@ class CCXTExchange(BaseExchange):
                     self.order_queue.put_nowait(order_json)
             except Exception as e:
                 log_exception(e, f"Error syncing orders")
-                await asyncio.sleep(
-                    1
-                )  # sleep to not throw the same error in a while loop
+                # give some time for the socket error to resolve before continuing
+                await asyncio.sleep(1)
 
     async def process_orders(self):
+        """
+        Pop an order from the queue and update the order manager.
+        """
         while True:
             order_json = await self.order_queue.get()
+            client_order_id = int(order_json["clientOrderId"])
+            filled = float(order_json.get("filled", 0))
+            order_status = OrderStatus.parse_order_status(order_json["status"])
 
-            # skip a beat to we allow the trade for this order to be received and processed i.e. updating/creating the position before the order dispatches any events.
-            # this a race condition between receiving order updates and trade updates, we may receive the order update before the trade update.
-            # this matters if we would listen to the order CLOSED event and expect the position to be updated already with the trade information.
-            await asyncio.sleep(1)
-
-            self.order_manager.on_order_update(
-                int(order_json["clientOrderId"]),
-                order_json["filled"],
-                OrderStatus.parse_order_status(order_json["status"]),
+            asyncio.create_task(
+                self.order_manager.on_order_update(
+                    client_order_id,
+                    filled,
+                    order_status,
+                )
             )
 
     async def poll_sync(self):
         """
-        API version that polls the API endpoints, loads all recent trades and and orders and processes them.
-        Used as a backup in case the websocket connection fails.
+        API version that polls the API endpoints, loads all recent trades and orders and processes them.
+        Used as a backup in case the websocket connection fails or not reporting all trades.
+        By default we load the trades within the last minute and the orders of the last 10 minutes. Can be adjusted in the config.
         """
-        last_trade_fetch_time = get_now_ts()
-        last_order_fetch_time = get_now_ts()
+        trade_fetch_time = get_now_ts()
+        order_fetch_time = get_now_ts()
 
         while True:
             try:
-                await self.fetch_and_process_trades(
-                    since_timestamp=last_trade_fetch_time
-                )
-                await self.fetch_and_process_orders(
-                    since_timestamp=last_order_fetch_time
-                )
+                await self.fetch_trades(since_timestamp=trade_fetch_time)
+                await self.fetch_orders(since_timestamp=order_fetch_time)
 
-                last_trade_fetch_time = (
-                    get_now_ts() - 1000 * self.TRADE_LOOKBACK_SECONDS
-                )
-                last_order_fetch_time = (
-                    get_now_ts() - 1000 * self.ORDER_LOOKBACK_SECONDS
-                )
+                trade_fetch_time = get_now_ts() - 1000 * self.TRADE_LOOKBACK_SECONDS
+                order_fetch_time = get_now_ts() - 1000 * self.ORDER_LOOKBACK_SECONDS
             except Exception as e:
                 log_exception(e, "CCXT Error syncing trades and orders.")
 
             await asyncio.sleep(self.POLL_INTERVAL_SECONDS)
 
-    async def fetch_and_process_trades(self, since_timestamp):
+    async def fetch_trades(self, since_timestamp):
         trades = await self.ccxt_client.fetchMyTrades(since=since_timestamp)
         for trade_json in trades:
             self.trade_queue.put_nowait(trade_json)
 
-    async def fetch_and_process_orders(self, since_timestamp):
+    async def fetch_orders(self, since_timestamp):
         orders = await self.ccxt_client.fetchOrders(since=since_timestamp)
         for order_json in orders:
             self.order_queue.put_nowait(order_json)
@@ -166,7 +163,7 @@ class CCXTExchange(BaseExchange):
                 params={} if params is None else params,
             )
 
-            log_message(f"CCXT _create_limit_order response {response}", stdout=True)
+            log_message(f"CCXT _create_limit_order response {response}", stdout=False)
             return response["id"]
         except Exception as e:
             log_exception(e, "Error creating limit order", stdout=True)
@@ -187,7 +184,7 @@ class CCXTExchange(BaseExchange):
                 params={} if params is None else params,
             )
 
-            log_message(f"CCXT _create_market_order response {response}")
+            log_message(f"CCXT _create_market_order response {response}", stdout=False)
             return response["id"]
         except Exception as e:
             log_exception(e, "Error creating market order")
@@ -202,7 +199,7 @@ class CCXTExchange(BaseExchange):
                 order.server_order_id, symbol=order.pair
             )
             if response["status"] == "canceled":
-                self.order_manager.on_order_update(
+                await self.order_manager.on_order_update(
                     order.client_order_id, order.filled, OrderStatus.CANCELED
                 )
                 return True
@@ -244,7 +241,7 @@ class CCXTExchange(BaseExchange):
                 await asyncio.sleep(delay)
                 attempt += 1
 
-        self.order_manager.on_order_update(
+        await self.order_manager.on_order_update(
             order.client_order_id, order.filled, OrderStatus.EXPIRED
         )
         log_message(

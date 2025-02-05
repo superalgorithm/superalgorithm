@@ -17,18 +17,27 @@ class TradeManager(EventEmitter):
         """
         Checks if the trade belongs to one of the orders created by this system, because we may receive trades in the socket update from other systems or manual trades.
         """
+
         associated_order = self.exchange.order_manager.get_order_by_server_id(
             trade.server_order_id
         )
 
         if associated_order:
+            # update the trade with the order's pair
             trade.position_type = associated_order.position_type
             trade.trade_type = associated_order.trade_type
             self.trades.append(trade)
+
+            # add the trade to the position manager
             self.exchange.position_manager.add_trade(trade)
+
+            # add the trade to the order as reference
             associated_order.add_trade(trade)
+
             self.dispatch("trade", trade)
+
             log_trade(trade, stdout=False)
+
             return True
 
         return False

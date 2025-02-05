@@ -75,5 +75,3 @@ async def test_stress_test(setup_exchange):
 
     strategy_monitor.clear()
     await strategy_monitor.stop()
-
-    await exchange.stop()

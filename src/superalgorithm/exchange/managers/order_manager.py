@@ -1,6 +1,6 @@
 import asyncio
 from typing import Dict
-from superalgorithm.types.data_types import Order, OrderStatus, Trade
+from superalgorithm.types.data_types import Order, OrderStatus
 from superalgorithm.utils.logging import log_message, log_order
 from superalgorithm.exchange.base_exchange import BaseExchange
 
@@ -20,15 +20,20 @@ class OrderManager:
         self.orders[order.client_order_id] = order
         log_order(order, stdout=False)
 
-    def on_order_update(
+    async def on_order_update(
         self, client_order_id: int, filled: float, order_status: OrderStatus
     ):
+        """
+        Call this to update order status and filled amount. Filled amount must be the total filled amount of the order.
+        """
         order = self.orders[client_order_id]
         order.filled = filled
-
         order_modified = order.order_status != order_status or order.filled != filled
 
         if order.order_status != order_status:
+            # before closing the order, we wait for at least one trade for the order to be processed (trades can be received delayed even tho they happen before the order is closed)
+            if order_status == OrderStatus.CLOSED:
+                await order.wait_for_trades()
             order.order_status = order_status
             order.dispatch(order.order_status.value, order)
 
@@ -60,6 +65,7 @@ class OrderManager:
         order = await exchange.create_order(...) -> order is filled and closed, but we have not yet added an event listener
         order.add_event_listener(...) -> this will never trigger as it already happened
         """
+
         await asyncio.sleep(0)
         if client_order_id in self.orders:
             self.orders[client_order_id].dispatch(
