@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "superalgorithm"
-version = "0.0.23"
+version = "0.0.24"
 description = "Python framework for algorithmic trading"
 readme = "README.md"
 authors = [
