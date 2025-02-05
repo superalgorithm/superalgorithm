@@ -1,14 +1,15 @@
 from abc import ABC
 import asyncio
-from typing import Any, Callable, Dict, List, TypeVar, Generic
+from typing import Any, Callable, Coroutine, Dict, List, TypeVar, Generic
 
-T = TypeVar("T", bound=Callable[..., None])
+# T = TypeVar("T", bound=Callable[..., None])
+EventHandler = Callable[..., None | Coroutine]
 
 
-class EventEmitter(ABC, Generic[T]):
+class EventEmitter(ABC):
     def __init__(self):
         super().__init__()
-        self.listeners: Dict[str, List[T]] = {}
+        self.listeners: Dict[str, List[EventHandler]] = {}
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -32,7 +33,7 @@ class EventEmitter(ABC, Generic[T]):
                 else:
                     listener(*args, **kwargs)
 
-    def on(self, event: str, listener: T) -> None:
+    def on(self, event: str, listener: EventHandler) -> None:
         if event not in self.listeners:
             self.listeners[event] = []
         self.listeners[event].append(listener)

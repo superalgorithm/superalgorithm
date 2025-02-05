@@ -23,18 +23,14 @@ def trade_manager(mock_exchange):
 
 @pytest.mark.asyncio
 async def test_trade_manager_emits_trade_event(trade_manager):
-    """Verify that adding a trade emits the 'trade' event."""
+    """Verify that adding trades emits the 'trade' event."""
 
-    handler_called = False
+    on_trade_mock = MagicMock()
 
-    def on_trade(trade):
-        nonlocal handler_called
-        handler_called = True
+    trade_manager.on("trade", on_trade_mock)
 
-    trade_manager.on("trade", on_trade)
-
-    test_trade = Trade(
-        trade_id="test_id",
+    test_trade_1 = Trade(
+        trade_id="test_id_1",
         timestamp=123456,
         pair="BTC/USDT",
         position_type=None,
@@ -44,6 +40,20 @@ async def test_trade_manager_emits_trade_event(trade_manager):
         server_order_id="order123",
     )
 
-    await trade_manager.add(test_trade)
+    test_trade_2 = Trade(
+        trade_id="test_id_2",
+        timestamp=123457,
+        pair="BTC/USDT",
+        position_type=None,
+        trade_type=None,
+        price=50001.0,
+        quantity=2.0,
+        server_order_id="order124",
+    )
 
-    assert handler_called, "Adding a trade did not emit the 'trade' event."
+    await trade_manager.add(test_trade_1)
+    await trade_manager.add(test_trade_2)
+
+    assert (
+        on_trade_mock.call_count == 2
+    ), "The 'trade' event handler was not called twice."

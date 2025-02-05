@@ -1,12 +1,13 @@
 import pytest
 import asyncio
+from unittest.mock import MagicMock
 from superalgorithm.exchange.woo_exchange import WOOExchange
+from superalgorithm.utils.config import config
 from superalgorithm.types.data_types import (
     OrderStatus,
     OrderType,
     PositionType,
 )
-from superalgorithm.utils.config import config
 
 
 api_key = config.get("ccxt_config")["api_key"]
@@ -29,8 +30,7 @@ async def setup_exchange():
     await exchange.start()
 
     mark_price = await fetch_markprice(exchange, symbol)
-
-    quantity = round(1 / mark_price)  # min 1 USD order required
+    quantity = round(2 / mark_price)  # min 1 USD order required
 
     await asyncio.sleep(2)  # wait for socket connect
 
@@ -79,6 +79,10 @@ async def execute_order_and_wait_close(
 async def test_open_long2(setup_exchange):
     exchange, mark_price, quantity = setup_exchange
 
+    trade_handler_mock = MagicMock()
+
+    exchange.trade_manager.on("trade", trade_handler_mock)
+
     order = await execute_order_and_wait_close(
         exchange, symbol, PositionType.LONG, quantity, "open", mark_price + 0.001
     )
@@ -106,6 +110,8 @@ async def test_open_long2(setup_exchange):
     assert exchange.order_manager.orders[order_close.client_order_id].filled == quantity
     assert exchange.position_manager.positions[symbol][PositionType.LONG].balance == 0
 
+    trade_handler_mock.assert_called()
+
 
 @pytest.mark.asyncio(loop_scope="module")
 async def test_cancel_order(setup_exchange):
@@ -114,7 +120,7 @@ async def test_cancel_order(setup_exchange):
     order = await exchange.open(
         symbol,
         PositionType.LONG,
-        quantity * 2,
+        quantity * 4,
         OrderType.LIMIT,
         mark_price - 0.10,
     )
@@ -132,14 +138,14 @@ async def test_cancel_all_orders(setup_exchange):
     order = await exchange.open(
         symbol,
         PositionType.LONG,
-        quantity * 2,
+        quantity * 4,
         OrderType.LIMIT,
         mark_price - 0.10,
     )
     order2 = await exchange.open(
         symbol,
         PositionType.LONG,
-        quantity * 2,
+        quantity * 4,
         OrderType.LIMIT,
         mark_price - 0.10,
     )
@@ -238,25 +244,25 @@ async def test_market_order(setup_exchange):
     # closing the positions
 
     order_complete_fut = asyncio.Future()
-    order = await exchange.close(
+    order3 = await exchange.close(
         symbol,
         PositionType.LONG,
         quantity,
         OrderType.MARKET,
     )
 
-    order.on("CLOSED", lambda _: order_complete_fut.set_result(None))
+    order3.on("CLOSED", lambda _: order_complete_fut.set_result(None))
 
     await order_complete_fut
 
     order_complete_fut = asyncio.Future()
-    order2 = await exchange.close(
+    order4 = await exchange.close(
         symbol,
         PositionType.SHORT,
         quantity,
         OrderType.MARKET,
     )
-    order2.on("CLOSED", lambda _: order_complete_fut.set_result(None))
+    order4.on("CLOSED", lambda _: order_complete_fut.set_result(None))
 
     await order_complete_fut
 
