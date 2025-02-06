@@ -38,8 +38,8 @@ async def test_stress_test(setup_exchange):
     BaseStrategy mirrors the below behavior for paper trading.
     """
     exchange: PaperExchange = setup_exchange
-
-    order_count = 1000
+    max_orders = 1000
+    order_count = max_orders
     has_order = False
     orders_filled = 0
 
@@ -69,9 +69,12 @@ async def test_stress_test(setup_exchange):
         exchange.trade_tasks.clear()
         await asyncio.gather(*trades_to_process)
 
+        # something blocks if we create 1000 orders at once, so this fixes it for now
+        await asyncio.sleep(0.001)
+
         order_count -= 1
 
-    assert orders_filled == 1000
+    assert orders_filled == max_orders
 
     strategy_monitor.clear()
     await strategy_monitor.stop()
