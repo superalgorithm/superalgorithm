@@ -13,7 +13,7 @@ class EventEmitter(ABC):
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
         """
-        Dispatch an event to all listeners. Async listeners are dispatched as tasks.
+        Dispatch an event to all listeners. Async listener functions are dispatched as tasks and run asynchronously, while sync functions are run synchronously.
         """
         if event in self.listeners:
             for listener in self.listeners[event]:
@@ -24,7 +24,7 @@ class EventEmitter(ABC):
 
     async def dispatch_and_await(self, event, *args, **kwargs):
         """
-        Dispatch an event and await all listeners to complete.
+        Dispatch an event to all listeners but only return when async listener functions are done.
         """
         if event in self.listeners:
             for listener in self.listeners[event]:

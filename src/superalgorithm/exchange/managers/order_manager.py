@@ -26,9 +26,6 @@ class OrderManager:
         """
         Call this to update order status and filled amount. Filled amount must be the total filled amount of the order.
         """
-        if client_order_id not in self.orders:
-            print(f"Order ID {client_order_id} not found in orders.")
-            return
 
         order = self.orders[client_order_id]
         order.filled = filled

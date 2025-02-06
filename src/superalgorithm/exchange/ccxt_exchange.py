@@ -4,7 +4,10 @@ import ccxt.pro as ccxt
 from ccxt import Exchange
 from ccxt import OperationFailed, OrderNotFound, RateLimitExceeded
 from superalgorithm.exchange.base_exchange import BaseExchange
-from superalgorithm.utils.helpers import get_exponential_backoff_delay, get_now_ts
+from superalgorithm.utils.helpers import (
+    get_exponential_backoff_delay,
+    get_now_ts,
+)
 from superalgorithm.utils.logging import log_exception, log_message
 from superalgorithm.types.data_types import (
     BalanceData,
@@ -63,6 +66,8 @@ class CCXTExchange(BaseExchange):
         """
         Starts the continous loading routine for receiving trade updates from the web socket.
         """
+        attempt = 1
+
         while True:
             try:
                 trades = await self.ccxt_client.watch_my_trades()
@@ -71,8 +76,9 @@ class CCXTExchange(BaseExchange):
 
             except Exception as e:
                 log_exception(e, "CCXT Error watching trades.")
-                # give some time for the socket error to resolve before continuing
-                await asyncio.sleep(1)
+                # Exponential backoff with a maximum delay before re-connecting
+                delay = get_exponential_backoff_delay(attempt)
+                await asyncio.sleep(delay)
 
     async def process_trades(self):
         """
@@ -87,6 +93,8 @@ class CCXTExchange(BaseExchange):
         """
         Continously monitor orders via web socket to sync order status and filled qty.
         """
+        attempt = 1
+
         while True:
             try:
                 orders = await self.ccxt_client.watch_orders()
@@ -94,8 +102,9 @@ class CCXTExchange(BaseExchange):
                     self.order_queue.put_nowait(order_json)
             except Exception as e:
                 log_exception(e, f"Error syncing orders")
-                # give some time for the socket error to resolve before continuing
-                await asyncio.sleep(1)
+                # Exponential backoff with a maximum delay before re-connecting
+                delay = get_exponential_backoff_delay(attempt)
+                await asyncio.sleep(delay)
 
     async def process_orders(self):
         """
@@ -243,7 +252,6 @@ class CCXTExchange(BaseExchange):
                     f"Retrying cancel order {order.server_order_id} in {delay:.2f} seconds",
                     "INFO",
                 )
-                await asyncio.sleep(delay)
                 attempt += 1
 
         await self.order_manager.on_order_update(
