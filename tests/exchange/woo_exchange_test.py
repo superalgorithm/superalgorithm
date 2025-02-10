@@ -20,7 +20,7 @@ ccxt_config = {
     "hedge_mode": True,
 }
 
-symbol = "PNUT/USDT:USDT"
+symbol = "WOO/USDT:USDT"
 
 
 @pytest.fixture(scope="module")
@@ -122,7 +122,7 @@ async def test_cancel_order(setup_exchange):
         PositionType.LONG,
         quantity * 4,
         OrderType.LIMIT,
-        mark_price - 0.10,
+        mark_price - 0.01,
     )
 
     await exchange.cancel_order(order)
@@ -140,14 +140,14 @@ async def test_cancel_all_orders(setup_exchange):
         PositionType.LONG,
         quantity * 4,
         OrderType.LIMIT,
-        mark_price - 0.10,
+        mark_price - 0.01,
     )
     order2 = await exchange.open(
         symbol,
         PositionType.LONG,
         quantity * 4,
         OrderType.LIMIT,
-        mark_price - 0.10,
+        mark_price - 0.01,
     )
 
     response = await exchange.cancel_all_orders()
@@ -195,14 +195,14 @@ async def test_hedge_mode(setup_exchange):
         PositionType.LONG,
         quantity * 2,
         OrderType.LIMIT,
-        mark_price - 0.1,
+        mark_price - 0.01,
     )
     order2 = await exchange.open(
         symbol,
         PositionType.SHORT,
         quantity * 2,
         OrderType.LIMIT,
-        mark_price + 0.1,
+        mark_price + 0.01,
     )
 
     await exchange.cancel_all_orders(symbol)
