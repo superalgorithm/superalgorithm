@@ -45,10 +45,11 @@ class CCXTExchange(BaseExchange):
 
     def _json_to_trade_obj(self, trade_json):
         """
-        This method parses the trade information received from the server and creates a Trade object.
+        This method parses the trade json the exchange returns a Trade object.
         """
 
-        # NOTE: position_type and trade_type are not available in the trade response from CCXT, we update this later in the _match_trade_with_order method
+        # NOTE: position_type and trade_type are not available in the trade response
+        # from CCXT, we update this later in the _match_trade_with_order method
         trade = Trade(
             trade_id=trade_json["id"],
             timestamp=trade_json["timestamp"],
@@ -64,7 +65,7 @@ class CCXTExchange(BaseExchange):
 
     async def sync_trades(self):
         """
-        Starts the continous loading routine for receiving trade updates from the web socket.
+        Starts the continous loading routine to receive trade updates via socket.
         """
         attempt = 1
 
@@ -101,7 +102,7 @@ class CCXTExchange(BaseExchange):
                 for order_json in orders:
                     self.order_queue.put_nowait(order_json)
             except Exception as e:
-                log_exception(e, f"Error syncing orders")
+                log_exception(e, "Error syncing orders")
                 # Exponential backoff with a maximum delay before re-connecting
                 delay = get_exponential_backoff_delay(attempt)
                 await asyncio.sleep(delay)
@@ -134,9 +135,10 @@ class CCXTExchange(BaseExchange):
 
     async def poll_sync(self):
         """
-        API version that polls the API endpoints, loads all recent trades and orders and processes them.
-        Used as a backup in case the websocket connection fails or not reporting all trades.
-        By default we load the trades within the last minute and the orders of the last 10 minutes. Can be adjusted in the config.
+        API version that polls the trades and orders via API endpoints.
+        Used as a backup in case the websocket connection fails or missing trades.
+        Default load trades within the last minute, orders within last 10 minutes.
+        Can be adjusted via config (TRADE_LOOKBACK_SECONDS, ORDER_LOOKBACK_SECONDS).
         """
         trade_fetch_time = get_now_ts()
         order_fetch_time = get_now_ts()
@@ -158,7 +160,7 @@ class CCXTExchange(BaseExchange):
         for trade_json in trades:
             self.trade_queue.put_nowait(trade_json)
 
-    async def fetch_orders(self, since_timestamp):
+    async def fetch_orders(self, since_timestamp: int):
         orders = await self.ccxt_client.fetchOrders(since=since_timestamp)
         for order_json in orders:
             self.order_queue.put_nowait(order_json)
@@ -247,12 +249,20 @@ class CCXTExchange(BaseExchange):
         attempt = 1
 
         while attempt <= max_retries:
+            if order.order_status != OrderStatus.OPEN:
+                log_message(
+                    f"Order {order.server_order_id} is not open, skipping cancel",
+                    "INFO",
+                )
+                return True
+
             if await self._cancel_order(order):
                 return True
             else:
+
                 delay = get_exponential_backoff_delay(attempt)
                 log_message(
-                    f"Retrying cancel order {order.server_order_id} in {delay:.2f} seconds",
+                    f"Retry cancel order {order.server_order_id} in {delay:.2f} sec.",
                     "INFO",
                 )
                 attempt += 1
@@ -261,7 +271,7 @@ class CCXTExchange(BaseExchange):
             order.client_order_id, order.filled, OrderStatus.EXPIRED
         )
         log_message(
-            f"Failed to cancel order {order.server_order_id} after {max_retries} attempts",
+            f"Cancel order failed {order.server_order_id} after {max_retries} attempts",
             "ERROR",
         )
         return False
@@ -271,11 +281,15 @@ class CCXTExchange(BaseExchange):
         Cancels all open orders, optionally filtered by a specific trading pair.
 
         Notes:
-            - Cancels each order individually via _cancel_order, and may trigger rate limits, but is preferred as CCXT returns inconsitent responses per exchange.
-            - also this way we can cancel all orders managed by the strategy vs. all orders on the account.
+            - Cancels each order individually via _cancel_order,
+              and may trigger rate limits, but is preferred as CCXT
+              returns inconsitent responses per exchange.
+            - also this way we can cancel all orders managed by
+              the strategy vs. all orders on the account.
         """
         success = []
-        for order in self.order_manager.orders.values():
+
+        for order in list(self.order_manager.orders.values()):
             if (
                 pair is None or order.pair == pair
             ) and order.order_status == OrderStatus.OPEN:
@@ -294,7 +308,7 @@ class CCXTExchange(BaseExchange):
 
     async def _get_balances(self) -> Balances:
         """
-        CCXT specific helper method to get the current account balances for each currency
+        CCXT helper method to get the current account balances for each currency
         See: https://docs.ccxt.com/#/?id=balance-structure
         """
         balance = await self.ccxt_client.fetchBalance()
@@ -321,7 +335,7 @@ class CCXTExchange(BaseExchange):
 
     def _get_order_side(self, order: Order):
         """
-        Helper method to determine the side of the order based on its position and trade type.
+        Helper method to get the side of the order based on its position and trade type.
         """
         side = (
             "buy"

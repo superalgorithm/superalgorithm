@@ -15,11 +15,9 @@ from superalgorithm.types.data_types import (
     Trade,
     PositionType,
     TradeType,
-    Position,
 )
 from superalgorithm.exchange.base_exchange import BaseExchange, InsufficientFundsError
 from superalgorithm.utils.logging import log_message
-from superalgorithm.exchange.status_tracker import get_latest_price
 
 
 class PaperExchange(BaseExchange):
@@ -89,7 +87,11 @@ class PaperExchange(BaseExchange):
             "server_order_id": server_order_id,
         }
 
-        # Simulating order exection. In a live exchage environment the order would be placed on the exchange and self._trade_fetch would have to listen for new trades filling the order.
+        """
+        Simulating order exection.
+        In a live exchage environment the order would be placed on the exchange
+        and self._trade_fetch would have to listen for new trades filling the order.
+        """
         self.trade_tasks.append(
             asyncio.create_task(self._simulate_trade_execution(trade_json))
         )
